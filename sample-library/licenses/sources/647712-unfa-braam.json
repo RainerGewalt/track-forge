@@ -1,0 +1,21 @@
+{
+  "verifiedAt": "2026-07-15T06:31:56.893Z",
+  "canonicalProvider": "wikimedia-commons",
+  "commonsMetadata": {
+    "title": "File:647712 unfa braam.flac",
+    "pageUrl": "https://commons.wikimedia.org/wiki/File%3A647712_unfa_braam.flac",
+    "fileUrl": "https://upload.wikimedia.org/wikipedia/commons/1/1c/647712_unfa_braam.flac",
+    "mime": "audio/flac",
+    "bytes": 450891,
+    "sha1": "bddcb1200a9c6398a41fa054cca072731c325c02",
+    "creator": "Unfa",
+    "licenseShortName": "CC0",
+    "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "license": "cc0",
+    "description": "From the creator: \"Here's a \"braam\" I've made using CC0-licensed sampled instruments and open-source audio software (including plug-ins): Ardour and Sfizz namely.\" Tags: film; brass; drum; inception; movie; trailer; dramatic; cinematic; braam; orchestral; bass; hit",
+    "copyrighted": "True",
+    "restrictions": "",
+    "assessments": ""
+  },
+  "licenseVerdict": "CC0 confirmed: CC0"
+}

@@ -1,0 +1,8 @@
+samples('github:tidalcycles/dirt-samples')
+
+s("bd ~ [sd rim] ~ bd [~ sd] ~ rim, hh*12")
+  .bank("RolandTR909")
+  .gain(".9 .55 .75 .5")
+  .sometimesBy(.35, rev)
+  .room(.18)
+  .orbit(81)

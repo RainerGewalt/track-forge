@@ -1,0 +1,10 @@
+// EXAMPLE TRACK — Memory family solo.
+setcpm(100 / 4)
+
+const MOTIF = "<e4 g4 ~ f#4 e4 ~ d4 [e4 g4]>"
+
+note(MOTIF).s("triangle")
+  .attack(.05).decay(.3).sustain(.4).release(.8)
+  .lpf(2400)
+  .room(.35).roomsize(3)
+  .gain(.28).orbit(14)

@@ -1,0 +1,21 @@
+{
+  "verifiedAt": "2026-07-15T06:31:57.854Z",
+  "canonicalProvider": "wikimedia-commons",
+  "commonsMetadata": {
+    "title": "File:Djembe accompaniment.ogg",
+    "pageUrl": "https://commons.wikimedia.org/wiki/File%3ADjembe_accompaniment.ogg",
+    "fileUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f8/Djembe_accompaniment.ogg",
+    "mime": "application/ogg",
+    "bytes": 232896,
+    "sha1": "4034a87d0b86c9ebe0a3a8de7ba6d1448cb507fd",
+    "creator": "Michi Henning",
+    "licenseShortName": "CC0",
+    "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "license": "cc0",
+    "description": "Sound sample of a djembe at medium pitch, illustrating the three basic sounds (bass, tone, slap). The sample starts with a binary call, plays three cycles of the accompaniment pattern, and ends with a call. The accompaniment is \"passport with a bass\": s..ss.tts.bss.tt\"",
+    "copyrighted": "True",
+    "restrictions": "",
+    "assessments": ""
+  },
+  "licenseVerdict": "CC0 confirmed: CC0"
+}

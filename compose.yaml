@@ -1,0 +1,30 @@
+services:
+  player:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    depends_on:
+      - source-api
+    ports:
+      # Default HTTP/HTTPS ports so devices on the LAN reach the player at
+      # https://<host>/ without typing a port. Override for rootless setups.
+      - "${PLAYER_BIND_ADDRESS:-0.0.0.0}:${PLAYER_HTTP_PORT:-80}:80"
+      - "${PLAYER_BIND_ADDRESS:-0.0.0.0}:${PLAYER_HTTPS_PORT:-443}:443"
+    volumes:
+      - ./dist:/usr/share/nginx/html:ro
+      - ./deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./deploy/certs/player.crt:/etc/nginx/certs/player.crt:ro
+      - ./deploy/certs/player.key:/etc/nginx/certs/player.key:ro
+      - ./deploy/certs/local-ca.crt:/etc/nginx/certs/local-ca.crt:ro
+
+  source-api:
+    image: node:22-alpine
+    restart: unless-stopped
+    user: "${SOURCE_UID:-1000}:${SOURCE_GID:-1000}"
+    environment:
+      SOURCE_ROOT: /workspace/src
+      SOURCE_EDITOR_TOKEN: "${SOURCE_EDITOR_TOKEN:-}"
+    command: ["node", "/app/source-api.mjs"]
+    volumes:
+      - ./scripts/source-api.mjs:/app/source-api.mjs:ro
+      # Only source files are writable. The built player and service code stay read-only.
+      - ./src:/workspace/src

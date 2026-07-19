@@ -1,0 +1,21 @@
+{
+  "verifiedAt": "2026-07-15T06:31:58.861Z",
+  "canonicalProvider": "wikimedia-commons",
+  "commonsMetadata": {
+    "title": "File:DIY kantele sample raw.ogg",
+    "pageUrl": "https://commons.wikimedia.org/wiki/File%3ADIY_kantele_sample_raw.ogg",
+    "fileUrl": "https://upload.wikimedia.org/wikipedia/commons/3/3e/DIY_kantele_sample_raw.ogg",
+    "mime": "application/ogg",
+    "bytes": 2134883,
+    "sha1": "298a5605c7deda595c09b9a3b5ffb057276aaed1",
+    "creator": "Olli Niemitalo",
+    "licenseShortName": "CC0",
+    "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "license": "cc0",
+    "description": "A raw recording of a home-made 5-string kantele played by an uneducated person. The first part is an adaptation of the traditional song Vaka vanha Väinämöinen. The other parts are some random ways in which the instrument can be played and may or may not correspond to traditional playing methods.",
+    "copyrighted": "True",
+    "restrictions": "",
+    "assessments": ""
+  },
+  "licenseVerdict": "CC0 confirmed: CC0"
+}

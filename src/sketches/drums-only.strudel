@@ -1,0 +1,8 @@
+samples('github:tidalcycles/dirt-samples')
+setcpm(120 / 4)
+
+s("bd sd bd <sd rim>, hh*8")
+  .bank("RolandTR909")
+  .gain(".9 .68 .82 .62")
+  .room(.14)
+  .orbit(30)

@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.env
+.DS_Store
+.idea/
+
+# Sample library: audio payloads are reproducible via scripts/samples/*.mjs
+sample-library/raw/
+sample-library/curated/
+sample-library/cache/
+public/samples/library/audio/
+
+# Locally generated TLS material for the LAN player
+deploy/certs/

@@ -1,0 +1,28 @@
+{
+  "artistName": "Your Artist Name",
+  "projectLabel": "Self-hosted Strudel",
+  "label": null,
+  "labelStatus": "not-selected",
+  "motto": "Set your motto in releases/artist-profile.json.",
+  "shortBio": "Replace this with a one-paragraph artist bio in releases/artist-profile.json.",
+  "longBio": "Replace this with a longer artist bio. This placeholder exists so a fresh checkout validates; the workspace treats this file as the single source of artist identity.",
+  "profileImage": {
+    "src": null,
+    "alt": "",
+    "focalPoint": "50% 50%",
+    "brief": "Use a real, user-provided portrait reference. Never invent a photorealistic identity without a reference.",
+    "rights": {
+      "creator": null,
+      "source": null,
+      "license": null,
+      "aiAssisted": null,
+      "aiTool": null,
+      "termsChecked": false,
+      "commercialUseChecked": false
+    }
+  },
+  "releaseNotes": [
+    "Document AI assistance per track and disclose it where platforms request it.",
+    "Do not enable monetization or Content ID until the applicable rights review is complete."
+  ]
+}

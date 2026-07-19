@@ -1,0 +1,6 @@
+chord("<Cm9 Abmaj7 Fm9 G7>/2")
+  .voicing()
+  .sound("triangle")
+  .room(.65)
+  .gain(.7)
+  .orbit(83)

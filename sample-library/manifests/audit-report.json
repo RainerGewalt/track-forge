@@ -1,0 +1,24 @@
+{
+  "generatedAt": "2026-07-15T14:40:55.798Z",
+  "ok": true,
+  "entryCount": 106,
+  "stats": {
+    "families": {
+      "ground": 8,
+      "memory": 35,
+      "pulse": 7,
+      "seed": 19,
+      "skin": 26,
+      "tremor": 11
+    },
+    "sources": {
+      "wikimedia": 3,
+      "vcsl": 103
+    },
+    "licenses": {
+      "CC0": 3,
+      "CC0-1.0": 103
+    }
+  },
+  "problems": []
+}

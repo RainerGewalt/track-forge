@@ -1,0 +1,480 @@
+/* LAN player page: dark, mobile-first, one column. */
+
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #12100d;
+  --panel: #1b1813;
+  --panel-2: #221e17;
+  --line: #352e23;
+  --text: #e8ddc8;
+  --muted: #a3977f;
+  --ember: #c96f2f;
+  --ember-soft: #8a4d22;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.pp-shell {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: max(12px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+}
+
+.pp-eyebrow {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.pp-top {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 8px 0 16px;
+}
+
+.pp-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.pp-identity > div {
+  min-width: 0;
+}
+
+.pp-profile-image {
+  width: 52px;
+  aspect-ratio: 4 / 5;
+  flex: none;
+  object-fit: cover;
+  border: 1px solid var(--line);
+}
+
+.pp-top h1 {
+  margin: 2px 0 0;
+  font-size: 26px;
+}
+
+.pp-motto {
+  margin: 4px 0 0;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.pp-studio-link {
+  flex: none;
+  color: var(--muted);
+  font-size: 13px;
+  text-decoration: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 12px;
+}
+
+/* Now playing ------------------------------------------------------------ */
+
+.pp-now {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 20px;
+}
+
+.pp-now-artwork {
+  display: block;
+  width: min(100%, 320px);
+  aspect-ratio: 1;
+  margin: 0 auto 16px;
+  object-fit: cover;
+  border: 1px solid var(--line);
+}
+
+.pp-now-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.pp-now-title h2 {
+  margin: 0 0 6px;
+  font-size: 20px;
+}
+
+.pp-chip {
+  display: inline-block;
+  font-size: 11px;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px 9px;
+}
+
+.pp-meta-button {
+  flex: none;
+}
+
+.pp-spectrum {
+  display: block;
+  width: 100%;
+  height: 130px;
+  margin: 12px 0 10px;
+  background: var(--panel-2);
+  border-radius: 10px;
+}
+
+.pp-progress {
+  height: 22px;
+  border-radius: 999px;
+  background: var(--panel-2);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.pp-progress-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0%;
+  background: linear-gradient(90deg, var(--ember-soft), var(--ember));
+  border-radius: 999px;
+  transition: width 0.4s linear;
+}
+
+.pp-phases {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 10px 0 4px;
+  scrollbar-width: none;
+}
+
+.pp-phases::-webkit-scrollbar {
+  display: none;
+}
+
+.pp-phase {
+  flex: none;
+  display: grid;
+  gap: 1px;
+  text-align: left;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 8px;
+}
+
+.pp-phase small {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.pp-phase.is-current {
+  border-color: var(--ember);
+  background: rgba(201, 111, 47, 0.14);
+}
+
+.pp-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 8px;
+}
+
+.pp-play {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  font-size: 22px;
+  background: var(--ember);
+  color: #17120b;
+  border: none;
+}
+
+.pp-play:disabled {
+  opacity: 0.6;
+}
+
+.pp-clock {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.pp-status-line {
+  margin: 8px 0 0;
+  min-height: 1em;
+  font-size: 12px;
+  color: #d98d5f;
+}
+
+/* Library ---------------------------------------------------------------- */
+
+.pp-phase-group {
+  margin-bottom: 18px;
+}
+
+.pp-phase-title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 0 8px;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.pp-phase-count {
+  font-size: 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 1px 7px;
+}
+
+.pp-track-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.pp-track {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--panel);
+}
+
+.pp-track.is-active {
+  border-color: var(--ember);
+}
+
+.pp-track-play {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--panel-2);
+  color: var(--ember);
+  font-size: 15px;
+}
+
+.pp-track-artwork {
+  width: 44px;
+  aspect-ratio: 1;
+  flex: none;
+  object-fit: cover;
+  border: 1px solid var(--line);
+}
+
+.pp-track-main {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pp-track-main strong {
+  font-size: 16px;
+}
+
+.pp-track-main small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.pp-track-info {
+  margin-left: auto;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-style: italic;
+  font-family: Georgia, serif;
+}
+
+/* Shared button reset ------------------------------------------------------ */
+
+button {
+  font: inherit;
+  color: var(--text);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+/* Metadata dialog ----------------------------------------------------------- */
+
+.pp-meta {
+  width: min(560px, 92vw);
+  max-height: 84vh;
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px;
+}
+
+.pp-meta::backdrop {
+  background: rgba(6, 5, 3, 0.7);
+}
+
+.pp-meta-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.pp-meta-artwork {
+  display: block;
+  width: min(100%, 280px);
+  aspect-ratio: 1;
+  margin: 0 auto 18px;
+  object-fit: cover;
+  border: 1px solid var(--line);
+}
+
+@media (max-width: 620px) {
+  .pp-top {
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .pp-track-artwork {
+    width: 38px;
+  }
+
+  .pp-motto {
+    max-width: 180px;
+  }
+}
+
+.pp-meta-head h2 {
+  margin: 2px 0 0;
+}
+
+.pp-meta-desc {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.pp-meta-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.pp-meta-facts div {
+  background: var(--panel-2);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.pp-meta-facts dt {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.pp-meta-facts dd {
+  margin: 4px 0 0;
+}
+
+.pp-meta h3 {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin: 16px 0 8px;
+}
+
+.pp-meta-families {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.pp-meta-families strong {
+  color: var(--ember);
+  text-transform: capitalize;
+  margin-right: 4px;
+}
+
+/* Hidden engine ------------------------------------------------------------- */
+
+.pp-engine {
+  position: fixed;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Arrangement lanes: real note and sample events per family ---------------- */
+
+.pp-lanes-wrap {
+  margin: 4px 0 6px;
+}
+
+.pp-lanes {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--panel-2);
+  cursor: pointer;
+}
+
+.pp-lanes-canvas {
+  display: block;
+  width: 100%;
+}
+
+.pp-lanes-playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--text);
+  opacity: 0.85;
+  pointer-events: none;
+  transition: left 0.4s linear;
+}

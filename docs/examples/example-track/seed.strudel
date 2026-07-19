@@ -1,0 +1,9 @@
+// EXAMPLE TRACK — Seed family solo.
+setcpm(100 / 4)
+
+s("white").struct("t*16")
+  .decay(.03).sustain(0)
+  .hpf(4500).lpf(9000)
+  .degradeBy(.4)
+  .velocity("<[.9 .5 .6 .8]!4>")
+  .gain(.11).orbit(12)

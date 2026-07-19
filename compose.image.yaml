@@ -1,0 +1,32 @@
+# Run the LAN player from the published GHCR images instead of building
+# locally. Used by ./setup.sh --image. The player build (studio + samples) and
+# the source-api server code are baked into the images; only the TLS
+# certificates and the editable src/ tree stay host mounts.
+#
+#   PLAYER_VERSION   image tag to run (default: latest; e.g. 1.0.0)
+#   PLAYER_IMAGE / SOURCE_API_IMAGE   override the full image reference
+
+services:
+  player:
+    image: ${PLAYER_IMAGE:-ghcr.io/rainergewalt/black-organic-trance/player:${PLAYER_VERSION:-latest}}
+    restart: unless-stopped
+    depends_on:
+      - source-api
+    ports:
+      - "${PLAYER_BIND_ADDRESS:-0.0.0.0}:${PLAYER_HTTP_PORT:-80}:80"
+      - "${PLAYER_BIND_ADDRESS:-0.0.0.0}:${PLAYER_HTTPS_PORT:-443}:443"
+    volumes:
+      - ./deploy/certs/player.crt:/etc/nginx/certs/player.crt:ro
+      - ./deploy/certs/player.key:/etc/nginx/certs/player.key:ro
+      - ./deploy/certs/local-ca.crt:/etc/nginx/certs/local-ca.crt:ro
+
+  source-api:
+    image: ${SOURCE_API_IMAGE:-ghcr.io/rainergewalt/black-organic-trance/source-api:${PLAYER_VERSION:-latest}}
+    restart: unless-stopped
+    user: "${SOURCE_UID:-1000}:${SOURCE_GID:-1000}"
+    environment:
+      SOURCE_ROOT: /workspace/src
+      SOURCE_EDITOR_TOKEN: "${SOURCE_EDITOR_TOKEN:-}"
+    volumes:
+      # Only source files are writable so Studio edits persist on the host.
+      - ./src:/workspace/src

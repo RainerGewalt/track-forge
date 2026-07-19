@@ -1,0 +1,10 @@
+// EXAMPLE TRACK — Tremor family solo.
+setcpm(100 / 4)
+
+note("e3").s("sawtooth").struct("t*8")
+  .superimpose(p => p.add(note(.1)))
+  .decay(.12).sustain(.2)
+  .hpf(120).lpf(2000).shape(.25)
+  .velocity("<[.9 .5 .6 .8]!4>")
+  .room(.25).roomsize(2)
+  .gain(.2).orbit(13)

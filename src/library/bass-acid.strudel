@@ -1,0 +1,7 @@
+note("<c2 eb2 f2 g2> [bb1 c2]*2")
+  .sound("sawtooth")
+  .cutoff(sine.range(500, 2600).slow(8))
+  .resonance(.8)
+  .decay(.15)
+  .gain(.55)
+  .orbit(82)

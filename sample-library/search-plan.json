@@ -1,0 +1,46 @@
+{
+  "concept": "Black Organic Trance",
+  "principle": "Few source materials, many musical transformations.",
+  "preferred": "raw one-shots and material recordings over polished loops",
+  "families": {
+    "pulse": {
+      "role": "physical or mental time axis: soft kicks, low thuds, sub impulses",
+      "queries": ["bass drum hit", "low tom single hit", "heartbeat drum", "deep drum one shot"]
+    },
+    "skin": {
+      "role": "one drum family per song: frame drum, bongo, hand drum, open/muted articulations",
+      "queries": ["frame drum hit", "bongo single hit", "hand drum slap", "djembe bass tone slap", "riq hit", "tambourine hit muted"]
+    },
+    "seed": {
+      "role": "small high-frequency motion: shaker, seed rattle, wood click, clave",
+      "queries": ["shaker single", "claves hit", "woodblock hit", "cabasa", "castanet click", "rattle seed"]
+    },
+    "tremor": {
+      "role": "rough tonal source material: bowed metal, friction, resonant scrape, tonal noise",
+      "queries": ["bowed cymbal", "waterphone", "metal scrape resonance", "singing bowl struck", "gong scrape"]
+    },
+    "memory": {
+      "role": "one restrained melodic color: breath-like winds, plucked strings, reed tones",
+      "queries": ["duduk note", "ney flute note", "bamboo flute single note", "oud pluck", "kantele pluck", "recorder long note"]
+    },
+    "ground": {
+      "role": "foundation: drones, room tones, air, low resonance",
+      "queries": ["drone open string", "tanpura", "room tone quiet", "wind ambience dry", "cave ambience"]
+    }
+  },
+  "sources": {
+    "vcsl": {
+      "repository": "https://github.com/sgossner/VCSL",
+      "license": "CC0 1.0",
+      "mode": "seed library, selected paths only, provenance pinned to commit hash"
+    },
+    "wikimedia": {
+      "api": "https://commons.wikimedia.org/w/api.php",
+      "mode": "supplementary one-shots, extmetadata license verification, CC0 auto-accept only"
+    },
+    "openverse": {
+      "api": "https://api.openverse.org/v1/audio/",
+      "mode": "discovery only; canonical provider verification required before download; Freesound results become manual candidates, never automatic downloads"
+    }
+  }
+}

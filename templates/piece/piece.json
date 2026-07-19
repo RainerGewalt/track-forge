@@ -1,0 +1,110 @@
+{
+  "id": "__PIECE_ID__",
+  "title": "__PIECE_TITLE__",
+  "artist": "",
+  "status": "sketch",
+  "version": "0.1.0",
+  "bpm": 120,
+  "instrumental": true,
+  "durationTargetMinutes": null,
+  "description": "",
+  "tags": [],
+  "artwork": {
+    "src": null,
+    "alt": "",
+    "focalPoint": "50% 50%",
+    "brief": "Define one physically plausible subject or material gesture that expresses the track without typography, logos or decorative symbolism.",
+    "rights": {
+      "creator": null,
+      "source": null,
+      "license": null,
+      "aiAssisted": null,
+      "aiTool": null,
+      "termsChecked": false,
+      "commercialUseChecked": false
+    }
+  },
+  "soundPalette": {
+    "framework": "black-organic-trance",
+    "culturalVoice": null,
+    "culturalFocus": "Undecided. Do not claim cultural authenticity.",
+    "families": {
+      "pulse": "Undecided single pulse family",
+      "skin": "Undecided single drum or skin family",
+      "seed": "Undecided fine percussion family with no more than two related variants",
+      "tremor": "Undecided rough tonal family",
+      "memory": "Undecided single melodic voice",
+      "ground": "Undecided single drone, noise or room foundation"
+    }
+  },
+  "aiHooks": {
+    "enabled": true,
+    "framework": "black-organic-trance",
+    "trackType": "custom",
+    "primaryRule": "Use one fixed electronic-organic core and at most one culturally distinctive main voice.",
+    "compositionLimits": {
+      "maxSoundFamilies": 6,
+      "maxCulturalMainVoices": 1,
+      "maxDrumFamilies": 1,
+      "maxMelodicFigures": 1,
+      "maxDroneFoundations": 1,
+      "decorativeInstrumentsAllowed": false
+    },
+    "densityMethods": [
+      "repetition",
+      "articulation",
+      "filtering",
+      "distortion",
+      "layering",
+      "spatial change"
+    ],
+    "mustPreserve": [
+      "The declared six-family palette",
+      "One central melodic voice",
+      "One coherent drone foundation"
+    ],
+    "mustAvoid": [
+      "Adding decorative instruments",
+      "Adding undeclared cultural color",
+      "Adding a second lead voice",
+      "Adding another drum family",
+      "Adding another pad or drone family"
+    ]
+  },
+  "release": {
+    "enabled": false,
+    "distributionMode": "private-library",
+    "monetizationEnabled": false,
+    "youtubeContentIdEnabled": false,
+    "explicit": false,
+    "plannedDate": null,
+    "releaseDate": null,
+    "label": null,
+    "distributor": null,
+    "isrc": null
+  },
+  "rights": {
+    "compositionOwner": "",
+    "masterOwner": "",
+    "aiAssisted": false,
+    "aiTools": [],
+    "samples": [],
+    "review": {
+      "compositionStatus": "undetermined",
+      "humanContributionDocumented": false,
+      "masterStatus": "not-rendered",
+      "aiTermsChecked": false,
+      "sampleUseChecked": true,
+      "contentIdStatus": "not-reviewed",
+      "notes": [
+        "Private-library mode does not publish the track or waive any rights.",
+        "Document concrete human musical contributions before claiming composition rights."
+      ]
+    },
+    "commercialUseChecked": false
+  },
+  "workflow": {
+    "nextStep": "Develop the first Strudel pattern.",
+    "lastReviewedAt": null
+  }
+}

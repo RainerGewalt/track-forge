@@ -1,0 +1,11 @@
+{
+  "exclude": [],
+  "reassign": {
+    "cf56d34c1b429cb8474213fa631d3d3d14d7e0a513024813ec269ee6ef549c34": {
+      "bank": "braam"
+    },
+    "ebc211af3ef9144fa4cf3b5d1548a0b62390502f0087b2453ed863c90f42b588": {
+      "bank": "kantele"
+    }
+  }
+}

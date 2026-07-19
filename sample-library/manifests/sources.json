@@ -1,0 +1,10 @@
+{
+  "vcsl": {
+    "repository": "https://github.com/sgossner/VCSL",
+    "branch": "master",
+    "commit": "c1ea7bcc3c7309650ab0da9d15c9cd1fbc4a4c7e",
+    "license": "CC0-1.0",
+    "licenseEvidence": "licenses/vcsl/LICENSE",
+    "seededAt": "2026-07-15T14:40:55.350Z"
+  }
+}

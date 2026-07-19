@@ -1,0 +1,7 @@
+// EXAMPLE TRACK — Pulse family solo.
+setcpm(100 / 4)
+
+note("e1").s("sine").struct("t*4")
+  .penv(18).pdecay(.06)
+  .decay(.28).sustain(0)
+  .shape(.2).gain(.65).orbit(10)
