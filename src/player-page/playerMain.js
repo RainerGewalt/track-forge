@@ -58,9 +58,14 @@ const playable = pieces.filter((piece) => getMainScene(piece));
 // --------------------------------------------------------------------------
 
 const root = document.querySelector('#player-root');
+const profileIsPlaceholder = artistProfile.artistName === 'Your Artist Name';
+const playerTitle = profileIsPlaceholder ? 'Strudel listening room' : artistProfile.artistName;
+const playerMotto = profileIsPlaceholder
+  ? 'Complete tracks built from live-coded patterns, served from your own machine.'
+  : artistProfile.motto;
 
 root.innerHTML = `
-  <main class="pp-shell">
+  <main class="pp-shell" id="player-main" tabindex="-1">
     <header class="pp-top">
       <div class="pp-identity">
         ${
@@ -71,47 +76,58 @@ root.innerHTML = `
             : ''
         }
         <div>
-          <p class="pp-eyebrow">${escapeHtml(artistProfile.projectLabel)}</p>
-          <h1>${escapeHtml(artistProfile.artistName)}</h1>
-          <p class="pp-motto">${escapeHtml(artistProfile.motto)}</p>
+          <p class="pp-eyebrow">Strudel Track Forge · Listening player</p>
+          <h1>${escapeHtml(playerTitle)}</h1>
+          <p class="pp-motto">${escapeHtml(playerMotto)}</p>
         </div>
       </div>
-      <a class="pp-studio-link" href="/index.html">Studio</a>
+      <a class="pp-studio-link" href="/index.html">Open Studio</a>
     </header>
 
-    <section class="pp-now" data-now hidden>
+    <section class="pp-intro" aria-labelledby="player-intro-title">
+      <p class="pp-eyebrow">Code becomes a complete arrangement</p>
+      <h2 id="player-intro-title">Choose a track, press play and follow how its layers evolve.</h2>
+      <p>The focused player uses the same plain Strudel files as the Studio—no account or cloud service required.</p>
+    </section>
+
+    <section class="pp-now" data-now hidden aria-labelledby="now-playing-title">
       <div data-now-artwork></div>
       <div class="pp-now-head">
         <div class="pp-now-title">
-          <h2 data-now-title></h2>
+          <p class="pp-eyebrow">Now selected</p>
+          <h2 id="now-playing-title" data-now-title></h2>
           <span class="pp-chip" data-now-status></span>
         </div>
         <button type="button" class="pp-meta-button" data-action="show-meta">Info</button>
       </div>
 
-      <canvas class="pp-spectrum" data-spectrum aria-label="Live frequency monitor"></canvas>
+      <canvas class="pp-spectrum" data-spectrum aria-hidden="true"></canvas>
 
-      <div class="pp-progress" data-progress role="slider" aria-label="Track position">
-        <div class="pp-progress-fill" data-progress-fill></div>
+      <div class="pp-progress">
+        <div class="pp-progress-fill" data-progress-fill aria-hidden="true"></div>
+        <input class="pp-progress-input" type="range" min="0" max="0" step="1" value="0"
+          data-progress aria-label="Track position" aria-valuetext="0:00 of 0:00" />
       </div>
 
       <div class="pp-phases" data-now-phases></div>
 
-      <div class="pp-lanes-wrap" data-lanes hidden></div>
+      <div class="pp-lanes-wrap" data-lanes aria-hidden="true" hidden></div>
 
       <div class="pp-controls">
         <button type="button" data-action="back30" aria-label="Back 30 seconds">−30</button>
-        <button type="button" class="pp-play" data-action="toggle" aria-label="Play or stop"></button>
+        <button type="button" class="pp-play" data-action="toggle">
+          <span data-play-icon aria-hidden="true"></span>
+        </button>
         <button type="button" data-action="fwd30" aria-label="Forward 30 seconds">+30</button>
-        <span class="pp-clock" data-clock>0:00 / 0:00</span>
+        <output class="pp-clock" data-clock aria-label="Playback time">0:00 / 0:00</output>
       </div>
-      <p class="pp-status-line" data-status-line></p>
+      <p class="pp-status-line" data-status-line role="status" aria-live="polite"></p>
     </section>
 
     <section class="pp-library" data-library></section>
   </main>
 
-  <dialog class="pp-meta" data-meta></dialog>
+  <dialog class="pp-meta" data-meta aria-labelledby="player-meta-title"></dialog>
   <div class="pp-engine" aria-hidden="true" data-engine></div>
 `;
 
@@ -138,7 +154,7 @@ const laneView = createLaneView(root.querySelector('[data-lanes]'), {
   onSeek: (seconds) => playSelected(seconds),
 });
 
-let selectedId = null;
+let selectedId = playable[0]?.id ?? null;
 let clockTimer = null;
 let lanesForId = null;
 
@@ -208,7 +224,7 @@ function renderLibrary() {
   const playback = transport.getState();
   const container = root.querySelector('[data-library]');
 
-  container.innerHTML = PHASES.map((phase) => {
+  const phaseGroups = PHASES.map((phase) => {
     const phasePieces = playable.filter((piece) => phaseOf(piece).id === phase.id);
 
     if (phasePieces.length === 0) {
@@ -228,10 +244,12 @@ function renderLibrary() {
                 isActive && playback.activeTrack?.id === piece.id && playback.status === 'playing';
               const artwork = resolveArtwork(piece);
               return `
-                <li>
+                <li class="pp-track-card ${isActive ? 'is-active' : ''}">
                   <button type="button" class="pp-track ${isActive ? 'is-active' : ''}"
-                    data-action="pick" data-id="${piece.id}">
-                    <span class="pp-track-play">${isPlaying ? '■' : '▶'}</span>
+                    data-action="pick" data-id="${piece.id}"
+                    ${isActive ? 'aria-current="true"' : ''}>
+                    <span class="pp-sr-only">${isPlaying ? 'Stop' : 'Play'} </span>
+                    <span class="pp-track-play" aria-hidden="true">${isPlaying ? '■' : '▶'}</span>
                     ${
                       hasImage(artwork)
                         ? `<img class="pp-track-artwork" src="${escapeHtml(artwork.src)}"
@@ -243,9 +261,9 @@ function renderLibrary() {
                       <small>${piece.bpm} BPM · ${formatClock(trackDurationSeconds(piece))}
                         · ${STATUS_LABELS[piece.status] ?? piece.status}</small>
                     </span>
-                    <span class="pp-track-info" data-action="meta" data-id="${piece.id}"
-                      role="button" aria-label="Show metadata">i</span>
                   </button>
+                  <button type="button" class="pp-track-info" data-action="meta" data-id="${piece.id}"
+                    aria-label="About ${escapeHtml(piece.title)}"><span aria-hidden="true">i</span></button>
                 </li>
               `;
             })
@@ -254,6 +272,15 @@ function renderLibrary() {
       </section>
     `;
   }).join('');
+
+  container.innerHTML = `
+    <header class="pp-library-head">
+      <p class="pp-eyebrow">Track library</p>
+      <h2>Choose a track to listen</h2>
+      <p>Selecting a track starts it immediately. Use the separate Info button for its story and sound palette.</p>
+    </header>
+    ${phaseGroups || '<p class="pp-empty">No playable tracks were found.</p>'}
+  `;
 }
 
 function renderNow() {
@@ -287,14 +314,26 @@ function renderNow() {
   statusChip.textContent = `${phaseOf(piece).label} · ${STATUS_LABELS[piece.status] ?? piece.status}`;
 
   const playButton = panel.querySelector('[data-action="toggle"]');
-  playButton.textContent = loading ? '…' : playing ? '■' : '▶';
+  playButton.querySelector('[data-play-icon]').textContent = loading ? '…' : playing ? '■' : '▶';
   playButton.disabled = loading;
+  playButton.setAttribute(
+    'aria-label',
+    loading ? `Loading ${piece.title}` : playing ? `Stop ${piece.title}` : `Play ${piece.title}`,
+  );
 
   panel.querySelector('[data-clock]').textContent =
     `${formatClock(Math.min(position, duration))} / ${formatClock(duration)}`;
 
   const fill = panel.querySelector('[data-progress-fill]');
   fill.style.width = duration > 0 ? `${Math.min(100, (position / duration) * 100)}%` : '0%';
+  const progress = panel.querySelector('[data-progress]');
+  progress.max = String(duration);
+  progress.value = String(Math.min(position, duration));
+  progress.disabled = duration === 0 || loading;
+  progress.setAttribute(
+    'aria-valuetext',
+    `${formatClock(Math.min(position, duration))} of ${formatClock(duration)}`,
+  );
 
   const phaseStrip = panel.querySelector('[data-now-phases]');
   const arrangement = Array.isArray(piece.arrangement) ? piece.arrangement : [];
@@ -361,7 +400,7 @@ function showMeta(piece) {
     <header class="pp-meta-head">
       <div>
         <p class="pp-eyebrow">${phaseOf(piece).label} · ${STATUS_LABELS[piece.status] ?? piece.status}</p>
-        <h2>${escapeHtml(piece.title)}</h2>
+        <h2 id="player-meta-title">${escapeHtml(piece.title)}</h2>
       </div>
       <button type="button" data-action="close-meta">Close</button>
     </header>
@@ -472,8 +511,7 @@ root.addEventListener('click', async (event) => {
   }
 });
 
-// Tap the progress bar to seek proportionally.
-root.querySelector('[data-progress]').addEventListener('click', async (event) => {
+root.querySelector('[data-progress]').addEventListener('input', (event) => {
   const piece = selectedPiece();
   const duration = piece ? trackDurationSeconds(piece) : 0;
 
@@ -481,12 +519,22 @@ root.querySelector('[data-progress]').addEventListener('click', async (event) =>
     return;
   }
 
-  const box = event.currentTarget.getBoundingClientRect();
-  const ratio = Math.min(1, Math.max(0, (event.clientX - box.left) / box.width));
-  await playSelected(Math.round(ratio * duration));
+  const position = Number(event.currentTarget.value);
+  root.querySelector('[data-progress-fill]').style.width = `${(position / duration) * 100}%`;
+  root.querySelector('[data-clock]').textContent =
+    `${formatClock(position)} / ${formatClock(duration)}`;
+  event.currentTarget.setAttribute(
+    'aria-valuetext',
+    `${formatClock(position)} of ${formatClock(duration)}`,
+  );
+});
+
+root.querySelector('[data-progress]').addEventListener('change', async (event) => {
+  await playSelected(Number(event.currentTarget.value));
 });
 
 render();
+void loadLanes(selectedPiece());
 void hydratePieceSources(pieces).then((state) => {
   if (state.updated > 0) {
     render();

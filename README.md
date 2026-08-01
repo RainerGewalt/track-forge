@@ -6,11 +6,11 @@
 <h1 align="center">Strudel Track Forge</h1>
 
 <p align="center">
-  <strong>Your Strudel files become a visual studio and a player you can open on your phone.</strong>
+  <strong>Turn Strudel live-coding patterns into complete tracks you can see, audition and play on your phone.</strong>
 </p>
 
 <p align="center">
-  Write and audition patterns. See the real arrangement. Keep every track as ordinary files.
+  A lightweight, self-hosted studio built around plain files—not accounts, a database or a cloud service.
 </p>
 
 <p align="center">
@@ -42,12 +42,19 @@
   </tr>
 </table>
 
-Strudel Track Forge is a lightweight, self-hosted workspace around
-[Strudel](https://strudel.cc/). It adds the parts that become useful when a
-pattern grows into a complete track: reliable transport, source auditioning,
-real arrangement lanes, track metadata and a focused listening view.
+**In one sentence:** Strudel Track Forge is the bridge between a folder of
+[Strudel](https://strudel.cc/) patterns and a complete track you can understand,
+edit safely and listen to anywhere on your local network.
+
+It adds the parts that become useful when a pattern grows into a full piece:
+reliable transport, source auditioning, real arrangement lanes, track metadata
+and a focused listening view.
 
 No account. No database. No cloud service. Your music stays in your folders.
+
+It is for Strudel musicians who want to move beyond a looping pattern without
+hiding their work inside a traditional DAW project. It is not a hosted music
+service, mastering suite or replacement for Strudel itself.
 
 ## What you get
 

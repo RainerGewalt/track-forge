@@ -19,6 +19,26 @@ body {
   margin: 0;
 }
 
+.skip-link {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 100;
+  padding: 10px 14px;
+  transform: translateY(-160%);
+  border: 2px solid #174f45;
+  border-radius: 8px;
+  color: #fffdf7;
+  font-weight: 800;
+  background: #174f45;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+  outline: 3px solid #fffdf7;
+  outline-offset: 2px;
+}
+
 button,
 select,
 input,
@@ -110,19 +130,21 @@ h2 {
   font-size: 0.74rem;
 }
 
-.summary-strip {
+.topbar-actions {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   justify-content: flex-end;
   gap: 8px;
 }
 
-.summary-strip span,
+.topbar-link,
+.track-count,
 .status-pill {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 30px;
+  min-height: 38px;
   padding: 0 10px;
   border: 1px solid #c8baa8;
   border-radius: 8px;
@@ -130,6 +152,24 @@ h2 {
   font-size: 0.82rem;
   font-weight: 800;
   background: #eef6f1;
+}
+
+.topbar-link {
+  color: #174f45;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  background: #fffdf7;
+}
+
+.topbar-link:hover,
+.topbar-link:focus-visible {
+  border-color: #174f45;
+  outline: 2px solid #174f45;
+  outline-offset: 1px;
+}
+
+.track-count {
+  white-space: nowrap;
 }
 
 .workspace {
@@ -205,6 +245,10 @@ summary:focus-visible {
 }
 
 .library-toggle {
+  display: none;
+}
+
+.library-drawer-head {
   display: none;
 }
 
@@ -373,6 +417,80 @@ summary:focus-visible {
     linear-gradient(0deg, rgba(31, 28, 24, 0.04) 1px, transparent 1px),
     #f4f1ea;
   background-size: 28px 28px;
+}
+
+.product-intro {
+  display: grid;
+  grid-template-columns: minmax(260px, 1.3fr) minmax(360px, 1fr);
+  gap: 22px;
+  padding: 18px 20px;
+  border: 1px solid #b8a98f;
+  border-radius: 12px;
+  background:
+    linear-gradient(120deg, rgba(23, 79, 69, 0.08), transparent 48%),
+    #fffdf7;
+  box-shadow: 0 8px 22px rgba(31, 28, 24, 0.06);
+}
+
+.product-intro-copy {
+  display: grid;
+  align-content: center;
+  gap: 7px;
+}
+
+.product-intro h2 {
+  max-width: 36ch;
+  font-size: clamp(1.25rem, 2vw, 1.65rem);
+}
+
+.product-intro-copy > p:last-child {
+  max-width: 68ch;
+  margin: 0;
+  color: #5e5347;
+  font-size: 0.9rem;
+}
+
+.product-path {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.product-path li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-content: center;
+  gap: 1px 8px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid #ded4c7;
+  border-radius: 9px;
+  background: rgba(255, 253, 247, 0.78);
+}
+
+.product-path li > span {
+  display: grid;
+  grid-row: 1 / 3;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  color: #fffdf7;
+  font-size: 0.75rem;
+  font-weight: 800;
+  background: #174f45;
+}
+
+.product-path strong {
+  font-size: 0.8rem;
+}
+
+.product-path small {
+  color: #675b4e;
+  font-size: 0.7rem;
 }
 
 .track-header {
@@ -785,8 +903,8 @@ summary:focus-visible {
 }
 
 .timeline-layer-label button {
-  width: 28px;
-  min-height: 28px;
+  width: 36px;
+  min-height: 36px;
   padding: 0;
   border-radius: 50%;
   font-size: 0.66rem;
@@ -1350,6 +1468,13 @@ summary:focus-visible {
     display: inline-flex;
   }
 
+  .library-drawer-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
   .library {
     position: fixed;
     top: 0;
@@ -1375,6 +1500,10 @@ summary:focus-visible {
     flex-basis: 100%;
     order: 5;
   }
+
+  .product-intro {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 620px) {
@@ -1392,7 +1521,12 @@ summary:focus-visible {
     overflow-wrap: anywhere;
   }
 
-  .summary-strip {
+  .topbar-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .track-count {
     margin-left: auto;
   }
 
@@ -1451,12 +1585,8 @@ summary:focus-visible {
     height: 40px;
   }
 
-  .timeline-layer-label button {
-    display: none;
-  }
-
   .timeline-layer-label {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) auto;
   }
 
   .timeline-segment span {
@@ -1504,6 +1634,20 @@ summary:focus-visible {
   .fact-list div,
   .shortcut-list div {
     grid-template-columns: 1fr;
+  }
+
+  .product-path {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .product-path li {
+    grid-template-columns: 1fr;
+    align-content: start;
+  }
+
+  .product-path li > span {
+    grid-row: auto;
+    margin-bottom: 5px;
   }
 }
 
@@ -1683,7 +1827,7 @@ summary:focus-visible {
 }
 
 .layer-mute {
-  min-height: 30px;
+  min-height: 36px;
   padding: 0 8px;
   font-size: 0.85rem;
 }

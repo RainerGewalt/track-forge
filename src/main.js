@@ -44,7 +44,7 @@ const ARRANGEMENT_TAIL_SECONDS = 60;
 const app = document.querySelector('#root');
 
 app.innerHTML = `
-  <main class="app-shell">
+  <main class="app-shell" id="studio-main" tabindex="-1">
     <header class="topbar">
       <div class="topbar-identity">
         ${
@@ -55,25 +55,30 @@ app.innerHTML = `
             : ''
         }
         <div class="topbar-title">
-          <p class="eyebrow">${escapeHtml(artistProfile.artistName)}</p>
-          <h1>Track Workspace</h1>
-          <p class="topbar-motto">${escapeHtml(artistProfile.motto)}</p>
+          <p class="eyebrow">Strudel Track Forge</p>
+          <h1>Turn live-coded patterns into complete tracks</h1>
+          <p class="topbar-motto">Arrange, audition and inspect your music while every track stays in plain local files.</p>
         </div>
       </div>
-      <button class="library-toggle" type="button" data-action="toggle-library"
-        aria-expanded="false" aria-controls="library-panel">
-        Library
-      </button>
-      <button class="samples-toggle" type="button" data-action="open-samples">
-        Samples
-      </button>
-      <div class="summary-strip" aria-label="Workspace summary">
-        <span>${pieces.length} ${pieces.length === 1 ? 'track' : 'tracks'}</span>
-      </div>
+      <nav class="topbar-actions" aria-label="Workspace destinations">
+        <button class="library-toggle" type="button" data-action="toggle-library"
+          aria-expanded="false" aria-controls="library-panel">
+          Tracks
+        </button>
+        <a class="topbar-link" href="/player.html">Listening player</a>
+        <button class="samples-toggle" type="button" data-action="open-samples">
+          Samples
+        </button>
+        <span class="track-count">${pieces.length} ${pieces.length === 1 ? 'track' : 'tracks'}</span>
+      </nav>
     </header>
 
     <div class="workspace">
       <aside class="library" id="library-panel" aria-label="Track library">
+        <div class="library-drawer-head">
+          <strong>Track library</strong>
+          <button type="button" data-action="toggle-library" aria-label="Close track library">Close</button>
+        </div>
         <div class="library-controls">
           <input type="search" data-library-search placeholder="Search tracks…"
             aria-label="Search tracks by title or tag" />
@@ -85,12 +90,27 @@ app.innerHTML = `
           </select>
         </div>
         <section class="library-group">
-          <p class="eyebrow">Tracks</p>
+          <h2 class="eyebrow library-heading">Tracks</h2>
           <div class="track-list" data-track-list></div>
         </section>
       </aside>
 
       <section class="stage" aria-label="Listening workspace">
+        <section class="product-intro" aria-labelledby="product-intro-title">
+          <div class="product-intro-copy">
+            <p class="eyebrow">See what the code is doing</p>
+            <h2 id="product-intro-title">From Strudel pattern to a track you can understand.</h2>
+            <p>
+              Track Forge turns each track folder into a visual arrangement, a safe place to audition edits
+              and a focused player for phones on your local network.
+            </p>
+          </div>
+          <ol class="product-path" aria-label="Track Forge workflow">
+            <li><span aria-hidden="true">1</span><strong>Listen</strong><small>Play the full arrangement.</small></li>
+            <li><span aria-hidden="true">2</span><strong>Explore</strong><small>Follow and mute real layers.</small></li>
+            <li><span aria-hidden="true">3</span><strong>Edit safely</strong><small>Try source before saving.</small></li>
+          </ol>
+        </section>
         <header class="track-header" data-track-header></header>
         <p class="notice" data-notice role="status" hidden></p>
         <section class="stage-panel" data-stage-panel></section>
@@ -101,11 +121,11 @@ app.innerHTML = `
     <footer class="transport" data-transport aria-label="Playback transport"></footer>
   </main>
 
-  <dialog class="inspector" data-inspector aria-label="Source inspector">
+  <dialog class="inspector" data-inspector aria-labelledby="source-inspector-title">
     <header class="inspector-header">
       <div>
         <p class="eyebrow">Source Inspector</p>
-        <h2 data-inspector-title></h2>
+        <h2 id="source-inspector-title" data-inspector-title></h2>
       </div>
       <div class="inspector-actions">
         <button type="button" data-action="copy-source">Copy</button>
@@ -138,11 +158,11 @@ app.innerHTML = `
     </section>
   </dialog>
 
-  <dialog class="shortcuts" data-shortcuts aria-label="Keyboard shortcuts">
+  <dialog class="shortcuts" data-shortcuts aria-labelledby="shortcut-dialog-title">
     <header class="inspector-header">
       <div>
         <p class="eyebrow">Keyboard</p>
-        <h2>Shortcuts</h2>
+        <h2 id="shortcut-dialog-title">Shortcuts</h2>
       </div>
       <button type="button" data-action="close-shortcuts">Close</button>
     </header>
@@ -529,7 +549,7 @@ function renderTrackTimeline(piece, layers, playback, arrangement, hasMainScene)
           <button type="button" data-action="seek-relative" data-seconds="-30" ${hasMainScene ? '' : 'disabled'}>
             −30 sec
           </button>
-          <output class="timeline-position" data-timeline-position>
+          <output class="timeline-position" data-timeline-position aria-label="Current track position">
             ${formatClock(positionSeconds)} / ${formatClock(durationSeconds)}
           </output>
           <button type="button" data-action="seek-relative" data-seconds="30" ${hasMainScene ? '' : 'disabled'}>
@@ -572,9 +592,11 @@ function renderTrackTimeline(piece, layers, playback, arrangement, hasMainScene)
                   <button type="button" data-action="toggle-layer-mute"
                     data-piece-id="${piece.id}" data-scene-id="${scene.id}"
                     class="layer-mute${isLayerMuted(piece.id, scene.id) ? ' is-muted' : ''}"
+                    aria-label="${isLayerMuted(piece.id, scene.id) ? 'Unmute' : 'Mute'} ${escapeHtml(scene.name)}"
+                    aria-pressed="${isLayerMuted(piece.id, scene.id)}"
                     ${canMuteLayers(piece) ? '' : 'disabled'}
                     title="${isLayerMuted(piece.id, scene.id) ? 'Unmute' : 'Mute'} ${escapeHtml(scene.name)} — playback continues">
-                    ${isLayerMuted(piece.id, scene.id) ? '🔇' : '🔊'}
+                    <span aria-hidden="true">${isLayerMuted(piece.id, scene.id) ? '🔇' : '🔊'}</span>
                   </button>
                 </div>
               `;
@@ -617,7 +639,9 @@ function renderTrackTimeline(piece, layers, playback, arrangement, hasMainScene)
           </div>
           <input class="timeline-scrubber" type="range" min="0" max="${durationSeconds}" step="1"
             value="${Math.min(positionSeconds, durationSeconds)}" data-song-position
-            aria-label="Song position" ${hasMainScene ? '' : 'disabled'} />
+            aria-label="Song position"
+            aria-valuetext="${formatClock(positionSeconds)} of ${formatClock(durationSeconds)}"
+            ${hasMainScene ? '' : 'disabled'} />
         </div>
       </div>
     </section>
@@ -908,16 +932,27 @@ document.addEventListener('click', async (event) => {
   const { action } = button.dataset;
 
   if (action === 'select-piece') {
+    const wasCompactDrawer = window.matchMedia('(max-width: 920px)').matches;
     ui.selectedPieceId = button.dataset.pieceId;
     ui.libraryOpen = false;
     syncLibraryDrawer();
     render();
+    if (wasCompactDrawer) {
+      const selectedHeading = app.querySelector('[data-track-header] h2');
+      selectedHeading?.setAttribute('tabindex', '-1');
+      selectedHeading?.focus();
+    }
     return;
   }
 
   if (action === 'toggle-library') {
     ui.libraryOpen = !ui.libraryOpen;
     syncLibraryDrawer();
+    if (ui.libraryOpen) {
+      app.querySelector('[data-library-search]')?.focus();
+    } else {
+      app.querySelector('.library-toggle')?.focus();
+    }
     return;
   }
 
@@ -1383,6 +1418,13 @@ function setInspectorStatus(message, isError = false) {
 // --------------------------------------------------------------------------
 
 window.addEventListener('keydown', async (event) => {
+  if (event.key === 'Escape' && ui.libraryOpen) {
+    ui.libraryOpen = false;
+    syncLibraryDrawer();
+    app.querySelector('.library-toggle')?.focus();
+    return;
+  }
+
   if (isTextEntryTarget(event.target)) {
     return;
   }
@@ -1419,6 +1461,13 @@ window.addEventListener('keydown', async (event) => {
 
 });
 
+window.matchMedia('(max-width: 920px)').addEventListener('change', () => {
+  if (!window.matchMedia('(max-width: 920px)').matches) {
+    ui.libraryOpen = false;
+  }
+  syncLibraryDrawer();
+});
+
 // --------------------------------------------------------------------------
 // Helpers
 // --------------------------------------------------------------------------
@@ -1426,9 +1475,18 @@ window.addEventListener('keydown', async (event) => {
 function syncLibraryDrawer() {
   const library = app.querySelector('.library');
   const toggle = app.querySelector('.library-toggle');
+  const compact = window.matchMedia('(max-width: 920px)').matches;
+  const drawerIsModal = compact && ui.libraryOpen;
 
   library.classList.toggle('is-open', ui.libraryOpen);
   toggle.setAttribute('aria-expanded', String(ui.libraryOpen));
+  library.inert = compact && !ui.libraryOpen;
+  app.querySelector('.stage').inert = drawerIsModal;
+  app.querySelector('.transport').inert = drawerIsModal;
+  app.querySelector('.topbar-identity').inert = drawerIsModal;
+  app.querySelectorAll('.topbar-actions > :not(.library-toggle)').forEach((node) => {
+    node.inert = drawerIsModal;
+  });
 }
 
 function showNotice(text) {
@@ -1568,6 +1626,13 @@ function updateTimelinePosition(seconds) {
 
   if (scrubber && ui.scrubPreviewSeconds === null) {
     scrubber.value = String(positionSeconds);
+  }
+
+  if (scrubber) {
+    scrubber.setAttribute(
+      'aria-valuetext',
+      `${formatClock(positionSeconds)} of ${formatClock(durationSeconds)}`,
+    );
   }
 
   if (positionOutput) {
@@ -1733,6 +1798,7 @@ window.strudelWorkspace = {
 };
 
 render();
+syncLibraryDrawer();
 void sourceHydration.then((state) => {
   if (state.updated > 0) {
     render();
