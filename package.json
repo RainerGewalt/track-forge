@@ -29,7 +29,7 @@
   "devDependencies": {
     "vite": "6.4.3"
   },
-  "description": "Self-hosted Strudel track workspace with real arrangement lanes, a LAN player and rights-aware sample tooling.",
+  "description": "Local-first studio for turning Strudel live-coding patterns into complete tracks with visual arrangement lanes and a LAN player.",
   "license": "MIT",
   "repository": {
     "type": "git",
