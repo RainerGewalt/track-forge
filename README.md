@@ -56,6 +56,13 @@ It is for Strudel musicians who want to move beyond a looping pattern without
 hiding their work inside a traditional DAW project. It is not a hosted music
 service, mastering suite or replacement for Strudel itself.
 
+## Project status
+
+Strudel Track Forge is a personal tool built around my own Strudel folder.
+It is maintained for my own use and shared in case it is useful to someone
+else. Issues and pull requests are welcome and get a reply; there is no
+roadmap and no release schedule.
+
 ## What you get
 
 <table>
