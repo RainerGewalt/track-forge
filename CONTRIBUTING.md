@@ -4,6 +4,9 @@ Track Forge is a small personal tool that is shared in case it helps other
 Strudel musicians. Bug reports, questions and pull requests are welcome and get
 a reply, but there is no roadmap and no release schedule.
 
+Everyone taking part is expected to follow the
+[code of conduct](CODE_OF_CONDUCT.md).
+
 ## Before you start
 
 - For a bug, open an issue with the steps that reproduce it, your browser and
