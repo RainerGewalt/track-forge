@@ -18,6 +18,8 @@ import { artistProfile, hasImage, imagePosition, resolveArtwork, resolveProfileI
 import { drawLane } from './laneRendering.js';
 import { installAudioMaster, killAudio, openAudio } from './audioMaster.js';
 import { hydratePieceSources, savePieceSource } from './sourceSync.js';
+import { appUrl } from './appUrl.js';
+import { attributionHtml } from './attribution.js';
 
 // --------------------------------------------------------------------------
 // UI state (playback state lives in the transport, not here)
@@ -55,7 +57,7 @@ app.innerHTML = `
             : ''
         }
         <div class="topbar-title">
-          <p class="eyebrow">Strudel Track Forge</p>
+          <p class="eyebrow">Track Forge</p>
           <h1>Turn live-coded patterns into complete tracks</h1>
           <p class="topbar-motto">Arrange, audition and inspect your music while every track stays in plain local files.</p>
         </div>
@@ -65,7 +67,7 @@ app.innerHTML = `
           aria-expanded="false" aria-controls="library-panel">
           Tracks
         </button>
-        <a class="topbar-link" href="/player.html">Listening player</a>
+        <a class="topbar-link" href="${appUrl('player.html')}">Listening player</a>
         <button class="samples-toggle" type="button" data-action="open-samples">
           Samples
         </button>
@@ -115,6 +117,7 @@ app.innerHTML = `
         <p class="notice" data-notice role="status" hidden></p>
         <section class="stage-panel" data-stage-panel></section>
         <div class="track-details" data-track-details></div>
+        ${attributionHtml('attribution')}
       </section>
     </div>
 
@@ -240,7 +243,7 @@ function getTimelinePreview(pieceId) {
   }
 
   timelinePreviewCache.set(pieceId, null);
-  fetch(`/timeline-previews/${pieceId}.json`)
+  fetch(appUrl(`timeline-previews/${pieceId}.json`))
     .then((response) => (response.ok ? response.json() : null))
     .then((data) => {
       if (data) {
@@ -666,36 +669,16 @@ function renderTrackDetails() {
         <details>
           <summary>Sound Palette</summary>
           <dl class="fact-list">
-            ${factItem('Framework', titleFromId(piece.soundPalette.framework || 'custom'))}
             ${Object.entries(soundFamilies)
               .map(([role, description]) => factItem(titleFromId(role), description))
               .join('')}
-            ${factItem('Cultural voice', piece.soundPalette.culturalVoice || 'None')}
-            ${factItem('Cultural focus', piece.soundPalette.culturalFocus)}
           </dl>
         </details>
       `
       : '';
-  const aiHooks = piece.aiHooks
-    ? `
-      <details>
-        <summary>AI Hooks</summary>
-        <dl class="fact-list">
-          ${factItem('Framework', piece.aiHooks.framework)}
-          ${factItem('Track type', titleFromId(piece.aiHooks.trackType || 'custom'))}
-          ${factItem('Primary rule', piece.aiHooks.primaryRule)}
-          ${factItem('Density methods', piece.aiHooks.densityMethods || [])}
-          ${factItem('Must preserve', piece.aiHooks.mustPreserve || [])}
-          ${factItem('Must avoid', piece.aiHooks.mustAvoid || [])}
-        </dl>
-        <p class="group-hint">AI hooks are creative guardrails, not rights clearance or cultural certification.</p>
-      </details>
-    `
-    : '';
 
   host.innerHTML = `
     ${soundPalette}
-    ${aiHooks}
     <details>
       <summary>Track Details</summary>
       <dl class="fact-list">
@@ -1349,7 +1332,7 @@ function prepareSourceOverwrite() {
   }
 
   const tokenInput = dialog.querySelector('[data-source-token]');
-  tokenInput.value = sessionStorage.getItem('strudel-track-forge-source-editor-token') ?? '';
+  tokenInput.value = sessionStorage.getItem('track-forge-source-editor-token') ?? '';
   dialog.querySelector('[data-source-confirm]').hidden = false;
   setInspectorStatus('Review the file path and confirm once more to overwrite the disk source.');
   tokenInput.focus();
@@ -1400,7 +1383,7 @@ async function confirmSourceOverwrite(button) {
   inspectorSource.originalCode = result.source.code;
   inspectorSource.revision = result.source.revision;
   inspectorSource.triedCode = result.source.code;
-  sessionStorage.setItem('strudel-track-forge-source-editor-token', editorToken);
+  sessionStorage.setItem('track-forge-source-editor-token', editorToken);
   dialog.querySelector('[data-source-confirm]').hidden = true;
   dialog.querySelector('[data-action="prepare-source-save"]').disabled = true;
   setInspectorStatus('Saved to disk. The current draft is now the source of truth.');

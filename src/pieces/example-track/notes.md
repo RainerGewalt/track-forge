@@ -7,22 +7,20 @@ Working notes template. Real tracks should document here:
 
 ## Intent
 
-What the track is for (focus, ritual motion, transformation) and its
-emotional center.
+What the track is for and its emotional center.
 
-## Six Families
+## Layers
 
-A table mapping each family (Pulse, Skin, Seed, Tremor, Memory, Ground) to
-its concrete sound source and function in this track.
+Each layer (here: Pulse, Skin, Seed, Tremor, Memory, Ground), its concrete
+sound source and its function in this track.
 
 ## Tonal and Temporal System
 
 Tempo, exact bar count and duration, tonal center and the central motif.
 
-## Transition Logic
+## Transitions
 
-Anchor / Messenger / Transformer / Memory / Revealer for the major state
-changes.
+Which layer announces, carries or completes each major change.
 
 ## Open Questions
 
@@ -30,5 +28,5 @@ What the next listening session should decide.
 
 ## Sample and Rights Notes
 
-Which `bot_` banks are used (with license and provenance pointers), and the
+Which sample banks are used (with license and provenance pointers), and the
 current state of ownership and commercial-use review.

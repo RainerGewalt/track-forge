@@ -6,10 +6,10 @@
   "version": "0.1.0",
   "bpm": 100,
   "durationTargetMinutes": 2,
-  "description": "A minimal six-family example in E Aeolian: soft kick, one synthetic hand-drum family, a noise tick, a low saw wall, one melodic voice and one drone foundation. Synth-only, so it plays before the sample library exists.",
+  "description": "A minimal six-layer example in E Aeolian: soft kick, one synthetic hand drum, a noise tick, a low saw wall, one melodic voice and one drone. Synth-only, so it plays before the sample library exists.",
   "tags": [
     "example",
-    "six-families",
+    "synth-only",
     "e-aeolian"
   ],
   "arrangement": [
@@ -32,25 +32,12 @@
   ],
   "sectionDescriptions": {
     "main": "Complete 50-bar example arrangement",
-    "pulse": "Pulse family: a soft kick carrying the time axis",
-    "skin": "Skin family: one synthetic hand-drum family, open and muted",
-    "seed": "Seed family: one filtered noise tick",
-    "tremor": "Tremor family: a low detuned saw wall",
-    "memory": "Memory family: the single melodic voice",
-    "ground": "Ground family: one drone with controlled air"
-  },
-  "soundPalette": {
-    "framework": "black-organic-trance",
-    "culturalVoice": null,
-    "culturalFocus": "None. This example uses no cultural color.",
-    "families": {
-      "pulse": "One soft sine kick family",
-      "skin": "One synthetic hand-drum family with open and muted articulations",
-      "seed": "One filtered noise-tick family",
-      "tremor": "One low detuned saw family",
-      "memory": "One triangle voice carrying the sole E-Aeolian motif",
-      "ground": "One E drone foundation with brown-noise air"
-    }
+    "pulse": "Pulse: a soft kick carrying the time axis",
+    "skin": "Skin: one synthetic hand drum, open and muted",
+    "seed": "Seed: one filtered noise tick",
+    "tremor": "Tremor: a low detuned saw wall",
+    "memory": "Memory: the single melodic voice",
+    "ground": "Ground: one drone with controlled air"
   },
   "timeline": {
     "durationSeconds": 120,
@@ -203,36 +190,6 @@
       }
     }
   },
-  "aiHooks": {
-    "enabled": true,
-    "framework": "black-organic-trance",
-    "trackType": "custom",
-    "primaryRule": "Stay a minimal, readable demonstration of the six families; complexity belongs in real tracks.",
-    "compositionLimits": {
-      "maxSoundFamilies": 6,
-      "maxCulturalMainVoices": 1,
-      "maxDrumFamilies": 1,
-      "maxMelodicFigures": 1,
-      "maxDroneFoundations": 1,
-      "decorativeInstrumentsAllowed": false
-    },
-    "densityMethods": [
-      "repetition",
-      "articulation",
-      "filtering"
-    ],
-    "mustPreserve": [
-      "One family per orbit (10-15)",
-      "The single E-Aeolian motif",
-      "Synth-only sources so the example works without the sample library"
-    ],
-    "mustAvoid": [
-      "A second lead voice",
-      "Another drum family",
-      "Sample dependencies",
-      "Risers, drops and transition effects"
-    ]
-  },
   "release": {
     "enabled": false,
     "distributionMode": "private-library",
@@ -257,7 +214,7 @@
     "aiTools": [
       {
         "name": "AI assistant",
-        "usage": "Example arrangement written as documentation for the six-family framework."
+        "usage": "Example arrangement written as documentation."
       }
     ],
     "samples": [],

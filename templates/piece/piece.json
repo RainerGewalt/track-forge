@@ -24,53 +24,6 @@
       "commercialUseChecked": false
     }
   },
-  "soundPalette": {
-    "framework": "black-organic-trance",
-    "culturalVoice": null,
-    "culturalFocus": "Undecided. Do not claim cultural authenticity.",
-    "families": {
-      "pulse": "Undecided single pulse family",
-      "skin": "Undecided single drum or skin family",
-      "seed": "Undecided fine percussion family with no more than two related variants",
-      "tremor": "Undecided rough tonal family",
-      "memory": "Undecided single melodic voice",
-      "ground": "Undecided single drone, noise or room foundation"
-    }
-  },
-  "aiHooks": {
-    "enabled": true,
-    "framework": "black-organic-trance",
-    "trackType": "custom",
-    "primaryRule": "Use one fixed electronic-organic core and at most one culturally distinctive main voice.",
-    "compositionLimits": {
-      "maxSoundFamilies": 6,
-      "maxCulturalMainVoices": 1,
-      "maxDrumFamilies": 1,
-      "maxMelodicFigures": 1,
-      "maxDroneFoundations": 1,
-      "decorativeInstrumentsAllowed": false
-    },
-    "densityMethods": [
-      "repetition",
-      "articulation",
-      "filtering",
-      "distortion",
-      "layering",
-      "spatial change"
-    ],
-    "mustPreserve": [
-      "The declared six-family palette",
-      "One central melodic voice",
-      "One coherent drone foundation"
-    ],
-    "mustAvoid": [
-      "Adding decorative instruments",
-      "Adding undeclared cultural color",
-      "Adding a second lead voice",
-      "Adding another drum family",
-      "Adding another pad or drone family"
-    ]
-  },
   "release": {
     "enabled": false,
     "distributionMode": "private-library",

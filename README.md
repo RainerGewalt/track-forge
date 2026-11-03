@@ -1,12 +1,12 @@
 <p align="center">
-  <img src="docs/brand/strudel-track-forge-mark.svg" width="112"
-       alt="Strudel Track Forge: six track lanes converging into one audio waveform." />
+  <img src="docs/brand/track-forge-mark.svg" width="112"
+       alt="Track Forge: six track lanes converging into one audio waveform." />
 </p>
 
-<h1 align="center">Strudel Track Forge</h1>
+<h1 align="center">Track Forge</h1>
 
 <p align="center">
-  <strong>Turn Strudel live-coding patterns into complete tracks you can see, audition and play on your phone.</strong>
+  <strong>A track studio for Strudel: turn live-coding patterns into complete tracks you can see, audition and play on your phone.</strong>
 </p>
 
 <p align="center">
@@ -14,14 +14,15 @@
 </p>
 
 <p align="center">
+  <a href="https://rainergewalt.github.io/track-forge/"><strong>Try it in your browser</strong></a> ·
   <a href="#fastest-start">Fastest start</a> ·
   <a href="#what-you-get">What you get</a> ·
   <a href="docs/creating-a-track.md">Create a track</a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/RainerGewalt/strudel-track-forge/actions/workflows/ci.yml"><img alt="CI status" src="https://github.com/RainerGewalt/strudel-track-forge/actions/workflows/ci.yml/badge.svg" /></a>
-  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-16584c.svg" /></a>
+  <a href="https://github.com/RainerGewalt/track-forge/actions/workflows/ci.yml"><img alt="CI status" src="https://github.com/RainerGewalt/track-forge/actions/workflows/ci.yml/badge.svg" /></a>
+  <a href="LICENSE"><img alt="AGPL-3.0-or-later license" src="https://img.shields.io/badge/license-AGPL--3.0--or--later-16584c.svg" /></a>
   <a href="https://nodejs.org/"><img alt="Requires Node.js 20 or newer" src="https://img.shields.io/badge/node-20%2B-5b6d42.svg" /></a>
 </p>
 
@@ -42,7 +43,7 @@
   </tr>
 </table>
 
-**In one sentence:** Strudel Track Forge is the bridge between a folder of
+**In one sentence:** Track Forge is the bridge between a folder of
 [Strudel](https://strudel.cc/) patterns and a complete track you can understand,
 edit safely and listen to anywhere on your local network.
 
@@ -55,6 +56,16 @@ No account. No database. No cloud service. Your music stays in your folders.
 It is for Strudel musicians who want to move beyond a looping pattern without
 hiding their work inside a traditional DAW project. It is not a hosted music
 service, mastering suite or replacement for Strudel itself.
+
+Track Forge is an independent project built on Strudel. It is not part of the
+Strudel project and not endorsed by its maintainers.
+
+## Project status
+
+Track Forge is a personal tool built around my own Strudel folder.
+It is maintained for my own use and shared in case it is useful to someone
+else. Issues and pull requests are welcome and get a reply; there is no
+roadmap and no release schedule.
 
 ## What you get
 
@@ -84,19 +95,27 @@ And underneath it stays practical:
 - one-click playback, hard stop/restart and live per-layer mutes;
 - automatic track discovery — no central registry to maintain;
 - a CC0 sample pipeline with checksums, evidence and a manual-review queue;
-- explicit `soundPalette`, AI guardrails and rights-review fields per track.
+- rights fields per track that keep unknown ownership and sample terms
+  explicitly unknown.
 
-> **Safe public demo:** this repository contains exactly one neutral, synth-only
-> `example-track`. Its composition and arrangement are CC0. No private artist
-> tracks, artwork or release metadata are included.
+> **Example content:** this repository contains exactly one neutral, synth-only
+> `example-track`. Its composition and arrangement are CC0.
+
+## Try it without installing
+
+The [hosted demo](https://rainergewalt.github.io/track-forge/) runs the Studio
+with the example track in your browser, and the
+[listening player](https://rainergewalt.github.io/track-forge/player.html)
+shows the phone view. Drafts you try there play only in your browser; saving to
+files, your own tracks and the sample library need a local installation.
 
 ## Fastest start
 
 You need Git, Node.js 20 or newer and npm.
 
 ```sh
-git clone https://github.com/RainerGewalt/strudel-track-forge.git
-cd strudel-track-forge
+git clone https://github.com/RainerGewalt/track-forge.git
+cd track-forge
 ./setup.sh --dev --no-samples
 ```
 
@@ -219,13 +238,17 @@ commit `.env` or expose the source service to an untrusted network.
 
 ## Licensing and privacy
 
-- **Application code:** [MIT](LICENSE).
+- **Application code:** Copyright (C) 2026 Track Forge contributors,
+  [GNU AGPL-3.0-or-later](LICENSE). Track Forge bundles
+  [Strudel](https://codeberg.org/uzu/strudel), © Strudel contributors, which is
+  AGPL-3.0-or-later as well. If you run a modified Track Forge for other people
+  over a network, the AGPL requires you to offer them its source code.
 - **Included Example Track:** [CC0 1.0](src/pieces/example-track/LICENSE.md).
 - **Downloaded samples:** provider terms and provenance remain attached; the
   automatic path accepts only provider-confirmed CC0. See the
   [sample library documentation](sample-library/README.md).
-- **Your tracks:** keep whatever terms you choose. Track Forge does not publish
-  them or infer ownership.
+- **Your tracks:** the music you make is yours, under whatever terms you
+  choose. Track Forge does not publish your tracks or infer ownership.
 
 Rights fields document what is known; they are not legal certification. Unknown
 ownership, AI terms or sample permissions should stay explicitly unknown.
@@ -235,4 +258,9 @@ distributor integration or hosted collaboration platform. It is the focused
 bridge between Strudel source files and a track you can understand, audition
 and listen to anywhere at home.
 
-AI editing rules live in [`AGENTS.md`](AGENTS.md) and [`agents/`](agents/).
+## Contributing and support
+
+Questions, bug reports and pull requests are welcome; see
+[CONTRIBUTING.md](CONTRIBUTING.md). Please report security problems privately as
+described in [SECURITY.md](SECURITY.md). Changes are listed in
+[CHANGELOG.md](CHANGELOG.md).

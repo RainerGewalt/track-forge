@@ -109,6 +109,17 @@ body {
   font-size: 12px;
 }
 
+.pp-attribution {
+  margin: 0;
+  padding: 0 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.pp-attribution a {
+  color: inherit;
+}
+
 .pp-studio-link {
   flex: none;
   color: var(--muted);

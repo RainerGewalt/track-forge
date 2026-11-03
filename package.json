@@ -1,5 +1,5 @@
 {
-  "name": "strudel-track-forge",
+  "name": "track-forge",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -29,14 +29,17 @@
   "devDependencies": {
     "vite": "6.4.3"
   },
-  "description": "Local-first studio for turning Strudel live-coding patterns into complete tracks with visual arrangement lanes and a LAN player.",
-  "license": "MIT",
+  "description": "A track studio for Strudel: turn live-coding patterns into complete tracks with visual arrangement lanes and a phone-friendly LAN player.",
+  "license": "AGPL-3.0-or-later",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/RainerGewalt/strudel-track-forge.git"
+    "url": "git+https://github.com/RainerGewalt/track-forge.git"
   },
   "bugs": {
-    "url": "https://github.com/RainerGewalt/strudel-track-forge/issues"
+    "url": "https://github.com/RainerGewalt/track-forge/issues"
   },
-  "homepage": "https://github.com/RainerGewalt/strudel-track-forge#readme"
+  "homepage": "https://rainergewalt.github.io/track-forge/",
+  "engines": {
+    "node": ">=20"
+  }
 }

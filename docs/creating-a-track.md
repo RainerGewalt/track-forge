@@ -1,9 +1,9 @@
 # Creating a Track
 
 This guide walks through creating a complete track, from scaffold to a
-playable arrangement with lane previews. The canonical neutral reference lives
-in [`docs/examples/example-track/`](examples/example-track/); the public mirror
-also installs it as the immediately playable `src/pieces/example-track` demo.
+playable arrangement with lane previews. The neutral, CC0-licensed reference
+is [`src/pieces/example-track/`](../src/pieces/example-track/), which is also
+the demo that plays right after installation.
 
 ## 1. Scaffold
 
@@ -31,9 +31,6 @@ Structural conventions the tooling expects:
   `skin.strudel`, …), registered in `piece.js`. Solo files duplicate their
   material verbatim — there are no cross-file imports.
 
-The creative framework (six families, one motif, transformation instead of
-drops) is documented in [`agents/composition-rules.md`](../agents/composition-rules.md).
-
 ## 3. Fill the metadata
 
 `piece.json` drives the whole UI. The important fields:
@@ -44,8 +41,7 @@ drops) is documented in [`agents/composition-rules.md`](../agents/composition-ru
 | `arrangement` | Named phases with `"at": "m:ss"` — the seekable ruler |
 | `timeline` | `durationSeconds` + per-layer labeled segments; boundaries must equal the `arrange()` bar sums × bar length |
 | `sectionDescriptions` | One line per scene, shown next to layers |
-| `soundPalette` | The declared six families and the (at most one) cultural voice |
-| `aiHooks` | Hard guardrails for AI-assisted edits: `mustPreserve`, `mustAvoid`, `compositionLimits` |
+| `soundPalette.families` | Optional: one line per sound family, shown in the Studio's track details |
 | `rights.samples` | Every sample bank the code uses: `name`, `source`, `license`, `banks`, `provenance` |
 | `artwork` | Image reference with its own rights block; `src: null` until a file exists |
 | `release`, `rights.review` | Release-preparation state; never claim clearance that has not happened |
@@ -86,6 +82,6 @@ over the convention; raster files replace SVG placeholders by name.
 [ ] npm run pieces:validate is green
 [ ] npm run timeline:previews ran after the last musical change
 [ ] every used bot_ bank is listed in rights.samples
-[ ] notes.md describes intent, families, transitions and open questions
+[ ] notes.md describes intent, layers and open questions
 [ ] npm test and npm run build pass
 ```

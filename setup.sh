@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
-# Guided installation and start for the Strudel track workspace.
+# Guided installation and start for Track Forge.
 #
 #   ./setup.sh            install, build and start the LAN player (nginx)
 #   ./setup.sh --dev      install and start the Vite dev server instead
 #   ./setup.sh --no-samples   skip downloading the CC0 sample library
-#   ./setup.sh --image        pull and run the published GHCR images (no local build)
-#   ./setup.sh --image=1.0.0  pin the image version (default: latest)
 #
 # Safe to re-run: every step detects existing state and skips or refreshes.
 
@@ -28,47 +26,33 @@ note()  { printf '    %s%s%s\n' "$DIM" "$1" "$RESET"; }
 
 DEV_MODE=false
 WITH_SAMPLES=true
-IMAGE_MODE=false
-PLAYER_VERSION=${PLAYER_VERSION:-latest}
 for arg in "$@"; do
   case "$arg" in
     --dev) DEV_MODE=true ;;
     --no-samples) WITH_SAMPLES=false ;;
-    --image) IMAGE_MODE=true ;;
-    --image=*) IMAGE_MODE=true; PLAYER_VERSION="${arg#--image=}" ;;
-    *) fail "unknown option: $arg (use --dev, --no-samples or --image[=VERSION])" ;;
+    *) fail "unknown option: $arg (use --dev or --no-samples)" ;;
   esac
 done
 
-if [ "$IMAGE_MODE" = true ] && [ "$DEV_MODE" = true ]; then
-  fail "--image and --dev cannot be combined"
-fi
-export PLAYER_VERSION
-
 describe_mode() {
-  if [ "$IMAGE_MODE" = true ]; then echo "published images (GHCR, v$PLAYER_VERSION)"
-  elif [ "$DEV_MODE" = true ]; then echo 'dev server'
+  if [ "$DEV_MODE" = true ]; then echo 'dev server'
   else echo 'production LAN player (nginx)'; fi
 }
 
-printf '%s\n' "${BOLD}Strudel Track Workspace — setup${RESET}"
+printf '%s\n' "${BOLD}Track Forge — setup${RESET}"
 note "mode: $(describe_mode)"
 
 # ---------------------------------------------------------------------------
 step "Checking prerequisites"
 # ---------------------------------------------------------------------------
 
-if [ "$IMAGE_MODE" = false ]; then
-  command -v node >/dev/null || fail "Node.js is required (>= 20). https://nodejs.org"
-  NODE_MAJOR=$(node -p 'process.versions.node.split(".")[0]')
-  [ "$NODE_MAJOR" -ge 20 ] || fail "Node.js >= 20 required, found $(node --version)"
-  ok "node $(node --version)"
+command -v node >/dev/null || fail "Node.js is required (>= 20). https://nodejs.org"
+NODE_MAJOR=$(node -p 'process.versions.node.split(".")[0]')
+[ "$NODE_MAJOR" -ge 20 ] || fail "Node.js >= 20 required, found $(node --version)"
+ok "node $(node --version)"
 
-  command -v npm >/dev/null || fail "npm is required"
-  ok "npm $(npm --version)"
-else
-  note "image mode: skipping Node/npm, dependencies and local build"
-fi
+command -v npm >/dev/null || fail "npm is required"
+ok "npm $(npm --version)"
 
 if [ "$DEV_MODE" = false ]; then
   command -v docker >/dev/null || fail "Docker is required for the nginx player (or run ./setup.sh --dev)"
@@ -77,8 +61,6 @@ if [ "$DEV_MODE" = false ]; then
   command -v openssl >/dev/null || fail "openssl is required to generate the local TLS certificate"
   ok "openssl available"
 fi
-
-if [ "$IMAGE_MODE" = false ]; then
 
 # ---------------------------------------------------------------------------
 step "Installing dependencies"
@@ -96,7 +78,7 @@ step "Sample library (CC0)"
 # ---------------------------------------------------------------------------
 
 if [ "$WITH_SAMPLES" = false ]; then
-  warn "skipped (--no-samples): tracks that use bot_ banks will stay silent"
+  warn "skipped (--no-samples): tracks that use library sample banks will stay silent"
 elif [ -f public/samples/library/strudel-samples.json ] && [ -d public/samples/library/audio ] \
   && [ -n "$(ls -A public/samples/library/audio 2>/dev/null)" ]; then
   ok "library already built ($(find public/samples/library/audio -type f | wc -l) files)"
@@ -130,8 +112,6 @@ step "Validating tracks"
 
 npm run pieces:validate >/dev/null && ok "all tracks valid" || fail "track validation failed — run: npm run pieces:validate"
 
-fi  # end build-from-source asset pipeline (skipped in --image mode)
-
 # ---------------------------------------------------------------------------
 if [ "$DEV_MODE" = true ]; then
   step "Starting dev server"
@@ -140,14 +120,12 @@ if [ "$DEV_MODE" = true ]; then
   exec npm run dev
 fi
 
-if [ "$IMAGE_MODE" = false ]; then
 # ---------------------------------------------------------------------------
 step "Building the app"
 # ---------------------------------------------------------------------------
 
 npm run build >/dev/null
 ok "production build in dist/"
-fi
 
 # ---------------------------------------------------------------------------
 step "TLS certificate for the LAN"
@@ -169,13 +147,7 @@ fi
 step "Starting the player (Docker Compose)"
 # ---------------------------------------------------------------------------
 
-if [ "$IMAGE_MODE" = true ]; then
-  note "pulling ghcr.io images (v$PLAYER_VERSION)…"
-  docker compose -f compose.image.yaml pull
-  docker compose -f compose.image.yaml up -d
-else
-  docker compose up -d
-fi
+docker compose up -d
 ok "player container running"
 
 LAN_IP=${LAN_IP:-$(hostname -I 2>/dev/null | awk '{print $1}')}
@@ -183,9 +155,5 @@ printf '\n%sDone.%s\n\n' "$BOLD$GREEN" "$RESET"
 printf '  %sPlayer%s   https://%s/            (from any device on your network)\n' "$BOLD" "$RESET" "${LAN_IP:-<lan-address>}"
 printf '  %sStudio%s   https://%s/index.html\n' "$BOLD" "$RESET" "${LAN_IP:-<lan-address>}"
 printf '  %sCA cert%s  http://%s/local-ca.crt  (install on other devices once)\n\n' "$BOLD" "$RESET" "${LAN_IP:-<lan-address>}"
-if [ "$IMAGE_MODE" = true ]; then
-  note "stop with:   docker compose -f compose.image.yaml down"
-else
-  note "stop with:   npm run player:stop"
-fi
+note "stop with:   npm run player:stop"
 note "dev server:  ./setup.sh --dev"

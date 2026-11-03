@@ -5,8 +5,10 @@
 // copy a ready-to-paste Strudel snippet, and see license + provenance for
 // every file. The module owns all events inside its dialog element.
 
-export const STRUDEL_MAP_URL = '/samples/library/strudel-samples.json';
-export const LIBRARY_MANIFEST_URL = '/samples/library/library.json';
+import { appUrl } from '../appUrl.js';
+
+export const STRUDEL_MAP_URL = appUrl('samples/library/strudel-samples.json');
+export const LIBRARY_MANIFEST_URL = appUrl('samples/library/library.json');
 
 const FAMILIES = ['all', 'pulse', 'skin', 'seed', 'tremor', 'memory', 'ground'];
 
@@ -66,7 +68,7 @@ export function createSampleBrowser(dialog) {
 
   function preview(entry) {
     stopPreview();
-    audio = new Audio(`/samples/library/audio/${entry.file}`);
+    audio = new Audio(appUrl(`samples/library/audio/${entry.file}`));
     state.playingId = entry.id;
     audio.addEventListener('ended', () => {
       state.playingId = null;
