@@ -27,11 +27,16 @@ project space, and to anyone representing the project elsewhere.
 
 ## Reporting
 
-Report a problem privately through the repository's
-[private reporting form](https://github.com/RainerGewalt/track-forge/security/advisories/new).
-Only the maintainer can read it, and it is used for conduct reports as well as
-security problems. For content that breaks GitHub's own rules, you can also use
-GitHub's "Report content" function. Reports are handled confidentially.
+All project spaces are public pages on GitHub, so the maintainer sees problems
+there and acts on them under the enforcement rules below.
+
+To report something confidentially, such as harassment or threats, use
+GitHub's own reporting: **Report content** in the options menu of an issue,
+pull request or comment, or **Block or Report** on a user's profile. These
+reports go to GitHub's staff, who assess them against GitHub's rules, not
+against this code of conduct; see
+[reporting abuse or spam](https://docs.github.com/en/communities/maintaining-your-safety-on-github/reporting-abuse-or-spam).
+The project does not have a private contact address for conduct reports yet.
 
 ## Enforcement
 
