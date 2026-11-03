@@ -271,6 +271,16 @@ summary:focus-visible {
   font-size: 0.78rem;
 }
 
+.attribution {
+  margin: 8px 0 0;
+  color: #675b4e;
+  font-size: 0.78rem;
+}
+
+.attribution a {
+  color: inherit;
+}
+
 .track-list,
 .compact-list {
   display: grid;

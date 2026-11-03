@@ -17,6 +17,8 @@ import { installDestinationTap, createSpectrumView } from './monitor.js';
 import { fetchPreview, createLaneView } from './lanes.js';
 import { artistProfile, hasImage, imagePosition, resolveArtwork } from '../visuals.js';
 import { hydratePieceSources } from '../sourceSync.js';
+import { appUrl } from '../appUrl.js';
+import { attributionHtml } from '../attribution.js';
 
 // The tap must be in place before the first engine connects anything.
 installDestinationTap();
@@ -76,12 +78,12 @@ root.innerHTML = `
             : ''
         }
         <div>
-          <p class="pp-eyebrow">Strudel Track Forge · Listening player</p>
+          <p class="pp-eyebrow">Track Forge · Listening player</p>
           <h1>${escapeHtml(playerTitle)}</h1>
           <p class="pp-motto">${escapeHtml(playerMotto)}</p>
         </div>
       </div>
-      <a class="pp-studio-link" href="/index.html">Open Studio</a>
+      <a class="pp-studio-link" href="${appUrl('index.html')}">Open Studio</a>
     </header>
 
     <section class="pp-intro" aria-labelledby="player-intro-title">
@@ -125,6 +127,7 @@ root.innerHTML = `
     </section>
 
     <section class="pp-library" data-library></section>
+    ${attributionHtml('pp-attribution')}
   </main>
 
   <dialog class="pp-meta" data-meta aria-labelledby="player-meta-title"></dialog>

@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Questions about the Strudel language
+    url: https://strudel.cc/learn/faq/
+    about: Strudel itself is a separate project with its own documentation and community.

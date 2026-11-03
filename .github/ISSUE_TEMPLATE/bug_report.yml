@@ -1,0 +1,41 @@
+name: Bug report
+description: Something in the Studio, the Player or the tooling does not work as described.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Run ./setup.sh --dev --no-samples
+        2. Open the Studio and click Play Full Track
+        3. ...
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: How do you run Track Forge?
+      options:
+        - Hosted demo
+        - Dev server (npm run dev or ./setup.sh --dev)
+        - LAN player (./setup.sh with Docker)
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and operating system
+      placeholder: Firefox 140 on Ubuntu 24.04
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console output or error message
+      render: text

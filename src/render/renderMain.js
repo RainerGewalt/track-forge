@@ -1,4 +1,4 @@
-// Offline render page for Strudel Track Forge (Elandor, PR-026).
+// Offline render page for Track Forge (work in progress, not part of the build).
 // Plays a Strudel program through the same <strudel-editor> engine as the
 // studio and records everything that reaches the audio destination.
 import '@strudel/repl';

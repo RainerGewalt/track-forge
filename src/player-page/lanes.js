@@ -4,6 +4,7 @@
 // from the arrangement are drawn as vertical lines.
 
 import { drawLane } from '../laneRendering.js';
+import { appUrl } from '../appUrl.js';
 
 const NOTE_LANE_HEIGHT = 30;
 const HIT_LANE_HEIGHT = 22;
@@ -26,7 +27,7 @@ function emberColor(alpha, role, amplitude = 0.5) {
 
 export async function fetchPreview(pieceId, fetchImpl = fetch) {
   try {
-    const response = await fetchImpl(`/timeline-previews/${pieceId}.json`);
+    const response = await fetchImpl(appUrl(`timeline-previews/${pieceId}.json`));
     if (!response.ok) {
       return null;
     }

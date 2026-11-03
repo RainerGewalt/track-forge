@@ -67,22 +67,6 @@ const compositionStatuses = [
 const masterStatuses = ['not-rendered', 'draft', 'final'];
 const contentIdStatuses = ['not-reviewed', 'not-eligible', 'eligible'];
 const workflowFields = ['nextStep', 'lastReviewedAt'];
-const blackOrganicRoles = ['pulse', 'skin', 'seed', 'tremor', 'memory', 'ground'];
-const blackOrganicTrackTypes = [
-  'deep-focus',
-  'ritual-motion',
-  'black-focus',
-  'transformation-journey',
-  'custom',
-];
-const aiHookLimitFields = [
-  'maxSoundFamilies',
-  'maxCulturalMainVoices',
-  'maxDrumFamilies',
-  'maxMelodicFigures',
-  'maxDroneFoundations',
-  'decorativeInstrumentsAllowed',
-];
 const imageFields = ['src', 'alt', 'focalPoint', 'brief', 'rights'];
 const imageRightsFields = [
   'creator',
@@ -417,113 +401,9 @@ function validateMetadataShape(metadata, pieceDir, errors) {
   validateRights(metadata, errors);
   validateWorkflow(metadata, errors);
 
-  if (Object.hasOwn(metadata, 'soundPalette')) {
-    validateSoundPalette(metadata.soundPalette, errors);
-  }
-
-  if (Object.hasOwn(metadata, 'aiHooks')) {
-    validateAiHooks(metadata.aiHooks, errors);
-  }
-
   if (Object.hasOwn(metadata, 'timeline')) {
     validateTimeline(metadata.timeline, errors);
   }
-}
-
-function validateSoundPalette(soundPalette, errors) {
-  if (!isPlainObject(soundPalette)) {
-    errors.push('soundPalette must be an object when provided.');
-    return;
-  }
-
-  if (soundPalette.framework !== 'black-organic-trance') {
-    errors.push('soundPalette.framework must be "black-organic-trance".');
-  }
-
-  if (soundPalette.culturalVoice !== null && typeof soundPalette.culturalVoice !== 'string') {
-    errors.push('soundPalette.culturalVoice must be a string or null.');
-  }
-
-  if (typeof soundPalette.culturalFocus !== 'string') {
-    errors.push('soundPalette.culturalFocus must be a string.');
-  }
-
-  if (!isPlainObject(soundPalette.families)) {
-    errors.push('soundPalette.families must be an object.');
-    return;
-  }
-
-  const roles = Object.keys(soundPalette.families);
-  const unexpectedRoles = roles.filter((role) => !blackOrganicRoles.includes(role));
-  const missingRoles = blackOrganicRoles.filter((role) => !roles.includes(role));
-
-  if (roles.length > blackOrganicRoles.length) {
-    errors.push(`soundPalette.families may define at most ${blackOrganicRoles.length} families.`);
-  }
-
-  if (unexpectedRoles.length > 0) {
-    errors.push(`soundPalette.families contains unsupported roles: ${unexpectedRoles.join(', ')}.`);
-  }
-
-  if (missingRoles.length > 0) {
-    errors.push(`soundPalette.families is missing roles: ${missingRoles.join(', ')}.`);
-  }
-
-  for (const role of blackOrganicRoles) {
-    if (
-      Object.hasOwn(soundPalette.families, role) &&
-      (typeof soundPalette.families[role] !== 'string' || soundPalette.families[role].trim() === '')
-    ) {
-      errors.push(`soundPalette.families.${role} must be a non-empty string.`);
-    }
-  }
-}
-
-function validateAiHooks(aiHooks, errors) {
-  if (!isPlainObject(aiHooks)) {
-    errors.push('aiHooks must be an object when provided.');
-    return;
-  }
-
-  if (typeof aiHooks.enabled !== 'boolean') {
-    errors.push('aiHooks.enabled must be a boolean.');
-  }
-
-  if (aiHooks.framework !== 'black-organic-trance') {
-    errors.push('aiHooks.framework must be "black-organic-trance".');
-  }
-
-  if (!blackOrganicTrackTypes.includes(aiHooks.trackType)) {
-    errors.push(`aiHooks.trackType must be one of: ${blackOrganicTrackTypes.join(', ')}.`);
-  }
-
-  if (typeof aiHooks.primaryRule !== 'string' || aiHooks.primaryRule.trim() === '') {
-    errors.push('aiHooks.primaryRule must be a non-empty string.');
-  }
-
-  if (!isPlainObject(aiHooks.compositionLimits)) {
-    errors.push('aiHooks.compositionLimits must be an object.');
-  } else {
-    for (const field of aiHookLimitFields) {
-      if (!Object.hasOwn(aiHooks.compositionLimits, field)) {
-        errors.push(`aiHooks.compositionLimits is missing required field: ${field}.`);
-      }
-    }
-
-    validateMaxLimit(aiHooks.compositionLimits, 'maxSoundFamilies', 6, errors);
-    validateMaxLimit(aiHooks.compositionLimits, 'maxCulturalMainVoices', 1, errors);
-    validateMaxLimit(aiHooks.compositionLimits, 'maxDrumFamilies', 1, errors);
-    validateMaxLimit(aiHooks.compositionLimits, 'maxMelodicFigures', 1, errors);
-    validateMaxLimit(aiHooks.compositionLimits, 'maxDroneFoundations', 1, errors);
-
-    if (aiHooks.compositionLimits.decorativeInstrumentsAllowed !== false) {
-      errors.push('aiHooks.compositionLimits.decorativeInstrumentsAllowed must be false.');
-    }
-  }
-
-  validateStringArray(aiHooks, 'densityMethods', errors);
-  validateStringArray(aiHooks, 'mustPreserve', errors);
-  validateStringArray(aiHooks, 'mustAvoid', errors);
 }
 
 function validateTimeline(timeline, errors) {
@@ -600,33 +480,6 @@ function validateTimeline(timeline, errors) {
       }
     });
   }
-}
-
-function validateMaxLimit(limits, field, maximum, errors) {
-  const value = limits[field];
-
-  if (!Number.isInteger(value) || value < 0 || value > maximum) {
-    errors.push(`aiHooks.compositionLimits.${field} must be an integer from 0 to ${maximum}.`);
-  }
-}
-
-function validateStringArray(parent, field, errors) {
-  const value = parent[field];
-
-  if (!Array.isArray(value)) {
-    errors.push(`aiHooks.${field} must be an array.`);
-    return;
-  }
-
-  if (value.length === 0) {
-    errors.push(`aiHooks.${field} must not be empty.`);
-  }
-
-  value.forEach((item, index) => {
-    if (typeof item !== 'string' || item.trim() === '') {
-      errors.push(`aiHooks.${field}[${index}] must be a non-empty string.`);
-    }
-  });
 }
 
 function validateRelease(metadata, errors) {

@@ -6,8 +6,9 @@
 
 FROM node:22-alpine
 WORKDIR /app
-LABEL org.opencontainers.image.source="https://github.com/RainerGewalt/black-organic-trance"
-LABEL org.opencontainers.image.description="Strudel Studio source-editing API."
+LABEL org.opencontainers.image.source="https://github.com/RainerGewalt/track-forge"
+LABEL org.opencontainers.image.description="Track Forge source-editing API."
+LABEL org.opencontainers.image.licenses="AGPL-3.0-or-later"
 
 COPY scripts/source-api.mjs /app/source-api.mjs
 
