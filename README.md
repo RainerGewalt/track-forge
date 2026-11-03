@@ -261,6 +261,7 @@ and listen to anywhere at home.
 ## Contributing and support
 
 Questions, bug reports and pull requests are welcome; see
-[CONTRIBUTING.md](CONTRIBUTING.md). Please report security problems privately as
-described in [SECURITY.md](SECURITY.md). Changes are listed in
+[CONTRIBUTING.md](CONTRIBUTING.md) and the [code of conduct](CODE_OF_CONDUCT.md).
+Please report security problems privately as described in
+[SECURITY.md](SECURITY.md). Changes are listed in
 [CHANGELOG.md](CHANGELOG.md).
