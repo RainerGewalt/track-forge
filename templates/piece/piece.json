@@ -6,9 +6,89 @@
   "version": "0.1.0",
   "bpm": 120,
   "instrumental": true,
-  "durationTargetMinutes": null,
-  "description": "",
-  "tags": [],
+  "durationTargetMinutes": 1,
+  "description": "A small starting arrangement over 30 bars: a soft kick, one melodic lead and a drone. Synth-only, so it plays before the sample library exists. Replace it with your own music.",
+  "tags": [
+    "synth-only"
+  ],
+  "arrangement": [
+    {
+      "phase": "Intro",
+      "at": "0:00"
+    },
+    {
+      "phase": "Main",
+      "at": "0:16"
+    },
+    {
+      "phase": "Outro",
+      "at": "0:48"
+    }
+  ],
+  "sectionDescriptions": {
+    "main": "Complete 30-bar starting arrangement"
+  },
+  "timeline": {
+    "durationSeconds": 60,
+    "layers": {
+      "pulse": {
+        "family": "pulse",
+        "segments": [
+          {
+            "from": 0,
+            "to": 16,
+            "label": "Waiting",
+            "active": false
+          },
+          {
+            "from": 16,
+            "to": 48,
+            "label": "Steady kick"
+          },
+          {
+            "from": 48,
+            "to": 60,
+            "label": "Half-time"
+          }
+        ]
+      },
+      "lead": {
+        "family": "lead",
+        "segments": [
+          {
+            "from": 0,
+            "to": 16,
+            "label": "Single notes"
+          },
+          {
+            "from": 16,
+            "to": 48,
+            "label": "Full motif"
+          },
+          {
+            "from": 48,
+            "to": 60,
+            "label": "Last note"
+          }
+        ]
+      },
+      "ground": {
+        "family": "ground",
+        "segments": [
+          {
+            "from": 0,
+            "to": 48,
+            "label": "Drone"
+          },
+          {
+            "from": 48,
+            "to": 60,
+            "label": "Fading drone"
+          }
+        ]
+      }
+    }
+  },
   "artwork": {
     "src": null,
     "alt": "",
@@ -57,7 +137,7 @@
     "commercialUseChecked": false
   },
   "workflow": {
-    "nextStep": "Develop the first Strudel pattern.",
+    "nextStep": "Replace the starting arrangement in main.strudel with your own patterns, then update arrangement and timeline.",
     "lastReviewedAt": null
   }
 }

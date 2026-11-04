@@ -12,7 +12,10 @@ npm run piece:create -- my-track "My Track"
 ```
 
 This creates `src/pieces/my-track/` with `piece.json`, `piece.js`,
-`main.strudel` and `notes.md`. IDs must be kebab-case.
+`main.strudel` and `notes.md`. IDs must be kebab-case. The new `main.strudel`
+is a one-minute, synth-only starting arrangement (kick, lead and drone on three
+orbits) whose bar counts match the `arrangement` and `timeline` in
+`piece.json`, so it plays and gets lane previews right away.
 
 ## 2. Write the music
 
