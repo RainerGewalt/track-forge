@@ -20,6 +20,7 @@
     "player:start": "bash scripts/player-stack.sh start",
     "player:stop": "docker compose down",
     "test": "node --test tests/*.test.mjs",
+    "test:e2e": "node --test --test-concurrency=1 tests/e2e/*.e2e.mjs",
     "timeline:previews": "node --experimental-loader ./scripts/timeline/stub-loader.mjs scripts/timeline/generate.mjs",
     "images:manifest": "node scripts/images/manifest.mjs"
   },

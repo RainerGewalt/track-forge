@@ -20,3 +20,17 @@ jobs:
       - run: npm run pieces:validate
       - run: npm test
       - run: npm run build
+
+  # L4: the Studio and the player in headless Chrome (preinstalled on the
+  # runner), against the dev server and the hosted-demo build.
+  browser-scenarios:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test:e2e
