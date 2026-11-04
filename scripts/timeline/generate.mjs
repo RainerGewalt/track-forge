@@ -25,6 +25,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { writeGeneratedJson } from '../shared/generated-json.mjs';
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const piecesDir = path.join(projectRoot, 'src', 'pieces');
@@ -207,9 +208,16 @@ async function generateForPiece(pieceId) {
   const durationSeconds =
     metadata.timeline?.durationSeconds ?? (metadata.durationTargetMinutes ?? 0) * 60;
   const bpm = metadata.bpm;
+  const missing = [];
 
-  if (!durationSeconds || !bpm) {
-    console.warn(`- ${pieceId}: missing duration or bpm, skipped`);
+  if (!bpm) {
+    missing.push('bpm');
+  }
+  if (!durationSeconds) {
+    missing.push('durationTargetMinutes (or timeline.durationSeconds)');
+  }
+  if (missing.length > 0) {
+    console.warn(`- ${pieceId}: skipped, piece.json needs ${missing.join(' and ')}`);
     return;
   }
 
@@ -339,9 +347,8 @@ async function generateForPiece(pieceId) {
     lanes: outputLanes,
   };
 
-  await fs.mkdir(outputDir, { recursive: true });
   const file = path.join(outputDir, `${pieceId}.json`);
-  await fs.writeFile(file, JSON.stringify(output));
+  await writeGeneratedJson(file, output, { serialize: JSON.stringify });
 
   const totalEvents = output.lanes.reduce((sum, lane) => sum + lane.eventCount, 0);
   const kinds = output.lanes.map((lane) => `${lane.label}:${lane.kind}`).join(' ');

@@ -6,11 +6,16 @@
 // The result is recorded in manifests/library.json, which is the single
 // source of truth for build-library.mjs.
 //
+// When a recorded download is missing locally, curation names the affected
+// banks, exits non-zero and leaves manifests/library.json unchanged: a
+// library without those banks would silently break tracks that use them.
+//
 // Usage: node scripts/samples/curate.mjs
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { readJson, writeJson, readJsonl } from './shared/manifest.mjs';
+import { readJson, readJsonl } from './shared/manifest.mjs';
+import { writeGeneratedJson } from '../shared/generated-json.mjs';
 import { inspectWav } from './inspect-audio.mjs';
 import { libraryRoot, curatedDir, manifestFiles, families } from './shared/paths.mjs';
 
@@ -21,6 +26,7 @@ async function main() {
   const overrides = await readJson(overridesFile, { exclude: [], reassign: {} });
 
   const entries = [];
+  const missing = [];
   let excluded = 0;
 
   for (const download of downloads) {
@@ -48,8 +54,11 @@ async function main() {
       await fs.mkdir(path.dirname(curatedPath), { recursive: true });
       await fs.copyFile(sourcePath, curatedPath);
     } catch (error) {
-      console.warn(`! cannot curate ${download.localPath}: ${error.message}`);
-      continue;
+      if (error.code === 'ENOENT') {
+        missing.push({ bank: `bot_${bank}`, download });
+        continue;
+      }
+      throw error;
     }
 
     const audio = await inspectWav(curatedPath);
@@ -79,6 +88,23 @@ async function main() {
     });
   }
 
+  if (missing.length > 0) {
+    const banks = [...new Set(missing.map((item) => item.bank))].sort();
+    console.error(
+      `! could not restore ${missing.length} recorded ${missing.length === 1 ? 'file' : 'files'}; ` +
+        `these banks would be incomplete: ${banks.join(', ')}`,
+    );
+    for (const { bank, download } of missing) {
+      console.error(`  - ${bank}: ${download.localPath} (${download.source}, ${download.url ?? download.fileUrl})`);
+    }
+    console.error(
+      'manifests/library.json was left unchanged. Restore the files with npm run samples:seed (VCSL) ' +
+        'or npm run samples:download (Wikimedia Commons), then run this again.',
+    );
+    process.exitCode = 1;
+    return;
+  }
+
   entries.sort((a, b) => a.id.localeCompare(b.id));
 
   const byFamily = {};
@@ -86,7 +112,7 @@ async function main() {
     byFamily[family] = entries.filter((entry) => entry.family === family).length;
   }
 
-  await writeJson(manifestFiles.library, {
+  await writeGeneratedJson(manifestFiles.library, {
     generatedAt: new Date().toISOString(),
     principle: 'Few source materials, many musical transformations.',
     counts: { total: entries.length, excluded, ...byFamily },

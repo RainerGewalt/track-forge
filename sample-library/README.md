@@ -1,8 +1,7 @@
-# Sample Library — Black Organic Trance
+# Sample Library
 
-A small, rights-aware, locally rebuildable sound library organized by the
-project's six sound families (`pulse`, `skin`, `seed`, `tremor`, `memory`,
-`ground`).
+A small, rights-aware, locally rebuildable sound library organized by six
+sound families (`pulse`, `skin`, `seed`, `tremor`, `memory`, `ground`).
 
 Guiding principle:
 
@@ -38,9 +37,10 @@ mirrors, files behind bypassed authentication, aggressive scraping.
 ## Workflow
 
 ```bash
-npm run samples:seed       # select + download VCSL sounds (pinned commit)
+npm run samples:seed       # select + download VCSL sounds at the pinned commit
 npm run samples:discover   # Openverse/Commons discovery -> queue + candidates
-npm run samples:download   # download verified queue entries (re-verifies first)
+npm run samples:download   # restore recorded Commons files, then download
+                           # verified queue entries (re-verifies first)
 npm run samples:inspect    # WAV header/duration/peak report
 npm run samples:curate     # raw -> curated/<family>/<bank>/ + manifests/library.json
 npm run samples:build      # -> public/samples/library (audio + strudel-samples.json)
@@ -48,9 +48,15 @@ npm run samples:audit      # consistency + rights traceability report
 ```
 
 Audio payloads (`raw/`, `curated/`, `public/samples/library/audio/`) are
-gitignored; the manifests make every file reproducible. Re-running the
-workflow restores the library byte-for-byte (checksums in
-`manifests/downloads.jsonl`).
+gitignored; the manifests record where every file came from. On a fresh clone,
+`samples:seed` downloads the VCSL files at the commit pinned in
+`manifests/sources.json` (`--refresh` moves the pin to the current branch head),
+and `samples:download` restores the Wikimedia Commons files from their recorded
+URLs. Every restored file must match its SHA-256 in
+`manifests/downloads.jsonl`; a Commons file whose license no longer checks out
+or whose content changed is not restored. If any recorded file is missing,
+`samples:curate` lists the affected banks and stops without rewriting the
+manifests.
 
 Curation decisions live in `curation-overrides.json` (exclude or reassign
 by sha256). Search intent per family lives in `search-plan.json`.

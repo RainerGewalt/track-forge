@@ -47,6 +47,21 @@ test('hydration fails closed when the source endpoint is not JSON', async () => 
   assert.equal(pieces[0].scenes[0].code, 'bundled');
 });
 
+test('hydration does not contact a disabled source service', async () => {
+  const pieces = [{ id: 'test-piece', scenes: [{ id: 'main', code: 'bundled' }] }];
+  let requests = 0;
+  const state = await hydratePieceSources(pieces, {
+    enabled: false,
+    fetchImpl: async () => {
+      requests += 1;
+      return new Response('{}', { status: 200, headers: { 'Content-Type': 'application/json' } });
+    },
+  });
+
+  assert.equal(requests, 0);
+  assert.deepEqual(state, { available: false, writeEnabled: false, updated: 0 });
+});
+
 test('save sends the tried revision and editor token to the exact scene endpoint', async () => {
   let request = null;
   const result = await savePieceSource(

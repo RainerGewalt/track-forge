@@ -1,3 +1,13 @@
+import { appUrl } from './appUrl.js';
+
+// The source service runs behind the LAN player's nginx at api/. The Vite dev
+// server and the hosted demo have none, so they do not ask for it.
+// VITE_SOURCE_SERVICE=on or off overrides that default at build time.
+const sourceServiceSetting = import.meta.env?.VITE_SOURCE_SERVICE;
+export const SOURCE_SERVICE_ENABLED = sourceServiceSetting
+  ? sourceServiceSetting !== 'off'
+  : !import.meta.env?.DEV;
+
 export function applyLiveSources(pieces, sources) {
   let updated = 0;
 
@@ -22,13 +32,16 @@ export function applyLiveSources(pieces, sources) {
   return updated;
 }
 
-export async function hydratePieceSources(pieces, { fetchImpl = globalThis.fetch } = {}) {
-  if (typeof fetchImpl !== 'function') {
+export async function hydratePieceSources(
+  pieces,
+  { fetchImpl = globalThis.fetch, enabled = SOURCE_SERVICE_ENABLED } = {},
+) {
+  if (!enabled || typeof fetchImpl !== 'function') {
     return { available: false, writeEnabled: false, updated: 0 };
   }
 
   try {
-    const response = await fetchImpl('/api/sources', {
+    const response = await fetchImpl(appUrl('api/sources'), {
       cache: 'no-store',
       headers: { Accept: 'application/json' },
     });
@@ -57,7 +70,7 @@ export async function savePieceSource(
 ) {
   try {
     const response = await fetchImpl(
-      `/api/source/scene/${encodeURIComponent(pieceId)}/${encodeURIComponent(sceneId)}`,
+      appUrl(`api/source/scene/${encodeURIComponent(pieceId)}/${encodeURIComponent(sceneId)}`),
       {
         method: 'PUT',
         cache: 'no-store',

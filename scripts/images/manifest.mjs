@@ -10,6 +10,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { writeGeneratedJson } from '../shared/generated-json.mjs';
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const imagesDir = path.join(projectRoot, 'public', 'images');
@@ -49,11 +50,7 @@ for (const file of trackFiles) {
 const profileFiles = await listImages(path.join(imagesDir, 'profile'));
 const profile = profileFiles.length > 0 ? pickBest(profileFiles) : null;
 
-await fs.mkdir(path.dirname(outputFile), { recursive: true });
-await fs.writeFile(
-  outputFile,
-  `${JSON.stringify({ generatedAt: new Date().toISOString(), tracks, profile }, null, 2)}\n`,
-);
+await writeGeneratedJson(outputFile, { generatedAt: new Date().toISOString(), tracks, profile });
 
 console.log(
   `images manifest: ${Object.keys(tracks).length} track image(s), profile ${profile ? 'yes' : 'no'}`,

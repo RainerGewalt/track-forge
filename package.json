@@ -17,7 +17,7 @@
     "samples:build": "node scripts/samples/build-library.mjs",
     "samples:audit": "node scripts/samples/audit.mjs",
     "player:certificate": "bash scripts/generate-player-certificate.sh",
-    "player:start": "npm run pieces:validate && npm run build && docker compose up -d",
+    "player:start": "bash scripts/player-stack.sh start",
     "player:stop": "docker compose down",
     "test": "node --test tests/*.test.mjs",
     "timeline:previews": "node --experimental-loader ./scripts/timeline/stub-loader.mjs scripts/timeline/generate.mjs",

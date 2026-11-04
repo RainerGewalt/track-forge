@@ -117,6 +117,27 @@ export function isTextEntryTarget(target) {
 
 // The web component builds its StrudelMirror asynchronously after being
 // attached, so every call waits until element.editor exists.
+// Superdough loads its AudioWorklet effects (shape, crush, ...) on the first
+// mousedown without waiting for them. A track started by that same click can
+// trigger notes before the worklets exist, and those notes fail with a
+// "getTrigger" error. Running the same initialisation once before the first
+// evaluate closes the gap; the wait is bounded so playback never hangs on it.
+let audioInit = null;
+
+function ensureAudioReady(maxWaitMs = 3000) {
+  if (!audioInit && typeof globalThis.initAudio === 'function') {
+    audioInit = Promise.resolve()
+      .then(() => globalThis.initAudio())
+      .catch(() => {});
+  }
+
+  if (!audioInit) {
+    return Promise.resolve();
+  }
+
+  return Promise.race([audioInit, new Promise((resolve) => setTimeout(resolve, maxWaitMs))]);
+}
+
 export function createEditorEngine(element, { timeoutMs = 5000 } = {}) {
   const waitForMirror = () =>
     new Promise((resolve, reject) => {
@@ -144,6 +165,7 @@ export function createEditorEngine(element, { timeoutMs = 5000 } = {}) {
     },
     async evaluate() {
       const mirror = await waitForMirror();
+      await ensureAudioReady();
       await mirror.evaluate();
     },
     async stop() {

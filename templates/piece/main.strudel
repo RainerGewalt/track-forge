@@ -1,3 +1,47 @@
+// A small starting arrangement. Replace it with your own music.
+// One cycle is one 4/4 bar at 120 BPM, so the 30-bar form lasts 1:00.
+// Synth-only, so it plays before the sample library exists.
+// Keep bpm, durationTargetMinutes, arrangement and timeline in piece.json in
+// step with the bar counts below.
+
 setcpm(120 / 4)
 
-s("~")
+// PULSE — orbit 10: a soft kick.
+const kick = (hits) =>
+  note("c1").s("sine").struct(hits)
+    .penv(16).pdecay(.05)
+    .decay(.25).sustain(0)
+    .orbit(10)
+
+// LEAD — orbit 11: one melodic line.
+const lead = (melody) =>
+  note(melody).s("triangle")
+    .attack(.02).decay(.25).sustain(.3).release(.4)
+    .lpf(2000).room(.3)
+    .orbit(11)
+
+// GROUND — orbit 12: a quiet drone.
+const drone = note("[c2,g2]").slow(2).s("sawtooth")
+  .attack(1).release(2).sustain(.7)
+  .lpf(300).gain(.18)
+  .orbit(12)
+
+// Layers — 30 bars: Intro 8, Main 16, Outro 6.
+const pulseLayer = arrange(
+  [8, silence],
+  [16, kick("t*4").gain(.6)],
+  [6, kick("t ~ t ~").gain(.4)],
+)
+
+const leadLayer = arrange(
+  [8, lead("<c4 ~ eb4 ~>").gain(.2)],
+  [16, lead("<[c4 eb4] [g4 f4] [eb4 c4] [bb3 c4]>").gain(.3)],
+  [6, lead("<c4 ~ ~ ~>").gain(.15)],
+)
+
+const groundLayer = arrange(
+  [24, drone],
+  [6, drone.gain(.1)],
+)
+
+stack(pulseLayer, leadLayer, groundLayer)

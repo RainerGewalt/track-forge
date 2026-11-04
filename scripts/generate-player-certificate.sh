@@ -18,6 +18,14 @@ fi
 
 mkdir -p "$certificate_directory"
 
+for certificate_file in local-ca.crt local-ca.key player.crt player.key; do
+  if [[ -d "$certificate_directory/$certificate_file" ]]; then
+    echo "$certificate_directory/$certificate_file is a directory, created by Docker before the certificate existed." >&2
+    echo "Remove it, then run this again: sudo rmdir $certificate_directory/$certificate_file && sudo chown $(id -u):$(id -g) $certificate_directory" >&2
+    exit 1
+  fi
+done
+
 if [[ -s "$certificate_directory/local-ca.key" && -s "$certificate_directory/local-ca.crt" ]]; then
   echo "Reusing the existing local certificate authority."
 elif [[ -e "$certificate_directory/local-ca.key" || -e "$certificate_directory/local-ca.crt" ]]; then
@@ -30,7 +38,7 @@ else
     -sha256 \
     -nodes \
     -days 3650 \
-    -subj "/CN=Strudel LAN Player Local CA" \
+    -subj "/CN=Track Forge Local CA" \
     -addext "keyUsage=critical,keyCertSign,cRLSign" \
     -keyout "$certificate_directory/local-ca.key" \
     -out "$certificate_directory/local-ca.crt"

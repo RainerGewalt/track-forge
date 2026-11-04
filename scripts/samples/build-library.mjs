@@ -14,6 +14,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { readJson, writeJson } from './shared/manifest.mjs';
+import { writeGeneratedJson } from '../shared/generated-json.mjs';
 import { libraryRoot, publicLibraryDir, publicAudioDir, manifestFiles } from './shared/paths.mjs';
 
 async function main() {
@@ -80,7 +81,7 @@ async function main() {
 
   browserEntries.sort((a, b) => a.id.localeCompare(b.id));
 
-  await writeJson(path.join(publicLibraryDir, 'library.json'), {
+  await writeGeneratedJson(path.join(publicLibraryDir, 'library.json'), {
     generatedAt: new Date().toISOString(),
     strudelMap: '/samples/library/strudel-samples.json',
     counts: library.counts,
