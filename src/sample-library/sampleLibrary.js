@@ -10,6 +10,11 @@ import { appUrl } from '../appUrl.js';
 export const STRUDEL_MAP_URL = appUrl('samples/library/strudel-samples.json');
 export const LIBRARY_MANIFEST_URL = appUrl('samples/library/library.json');
 
+// Set by vite.config.js. The audio files are built locally and never
+// committed, so the hosted demo and `./setup.sh --no-samples` have the
+// manifest but no audio. Unknown (for example in node tests) counts as installed.
+export const SAMPLE_AUDIO_INSTALLED = import.meta.env?.VITE_SAMPLE_AUDIO !== 'missing';
+
 const FAMILIES = ['all', 'pulse', 'skin', 'seed', 'tremor', 'memory', 'ground'];
 
 export function strudelSnippet(entry) {
@@ -68,6 +73,9 @@ export function createSampleBrowser(dialog) {
 
   function preview(entry) {
     stopPreview();
+    if (!SAMPLE_AUDIO_INSTALLED) {
+      return;
+    }
     audio = new Audio(appUrl(`samples/library/audio/${entry.file}`));
     state.playingId = entry.id;
     audio.addEventListener('ended', () => {
@@ -157,7 +165,17 @@ export function createSampleBrowser(dialog) {
       return;
     }
 
-    list.innerHTML = [...byBank.entries()]
+    const notice = SAMPLE_AUDIO_INSTALLED
+      ? ''
+      : `
+        <p class="inspector-hint samples-notice" role="note">
+          The sample audio is not installed here, so previews are off. The banks and
+          snippets below show what the library contains. In a local copy, run
+          <code>./setup.sh</code> without <code>--no-samples</code> to download it.
+        </p>
+      `;
+
+    list.innerHTML = notice + [...byBank.entries()]
       .map(
         ([bank, bankEntries]) => `
           <section class="samples-bank">
@@ -175,7 +193,8 @@ export function createSampleBrowser(dialog) {
                     <li class="samples-entry ${state.playingId === entry.id ? 'is-playing' : ''}">
                       <button type="button" class="samples-play"
                         data-samples-action="preview" data-sample-id="${entry.id}"
-                        aria-label="Preview ${escapeHtml(entry.title)}">
+                        aria-label="Preview ${escapeHtml(entry.title)}"
+                        ${SAMPLE_AUDIO_INSTALLED ? '' : 'disabled title="Sample audio is not installed"'}>
                         ${state.playingId === entry.id ? '■' : '▶'}
                       </button>
                       <div class="samples-entry-main">
