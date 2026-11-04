@@ -5,6 +5,9 @@
 #   ./setup.sh --dev      install and start the Vite dev server instead
 #   ./setup.sh --no-samples   skip downloading the CC0 sample library
 #
+# The LAN player uses ports 80 and 443 by default. Override them with
+# PLAYER_HTTP_PORT and PLAYER_HTTPS_PORT in the environment or in .env.
+#
 # Safe to re-run: every step detects existing state and skips or refreshes.
 
 set -euo pipefail
@@ -23,6 +26,10 @@ ok()    { printf '    %s✓ %s%s\n' "$GREEN" "$1" "$RESET"; }
 warn()  { printf '    %s! %s%s\n' "$YELLOW" "$1" "$RESET"; }
 fail()  { printf '    %s✗ %s%s\n' "$RED" "$1" "$RESET"; exit 1; }
 note()  { printf '    %s%s%s\n' "$DIM" "$1" "$RESET"; }
+
+# LAN player checks and start, shared with `npm run player:start`.
+# shellcheck source=scripts/player-stack.sh
+source scripts/player-stack.sh
 
 DEV_MODE=false
 WITH_SAMPLES=true
@@ -60,6 +67,9 @@ if [ "$DEV_MODE" = false ]; then
   ok "docker $(docker --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1) + compose"
   command -v openssl >/dev/null || fail "openssl is required to generate the local TLS certificate"
   ok "openssl available"
+  player_check_certificate_paths
+  player_check_ports
+  ok "ports $(player_http_port) and $(player_https_port) ready for the player"
 fi
 
 # ---------------------------------------------------------------------------
@@ -84,9 +94,11 @@ elif [ -f public/samples/library/strudel-samples.json ] && [ -d public/samples/l
   ok "library already built ($(find public/samples/library/audio -type f | wc -l) files)"
 else
   note "downloading the curated CC0 selection (VCSL + Wikimedia, ~80 MB)…"
-  npm run samples:seed
-  npm run samples:download || warn "supplementary downloads failed — continuing with VCSL only"
-  npm run samples:curate
+  note "skip it with ./setup.sh --no-samples; the example track is synth-only"
+  npm run samples:seed || fail "the VCSL download failed. Re-run ./setup.sh to retry, or use --no-samples."
+  npm run samples:download || warn "some Wikimedia Commons downloads failed (see above)"
+  npm run samples:curate \
+    || fail "the sample library is incomplete (see the list above). Re-run ./setup.sh to retry, or use --no-samples."
   npm run samples:build
   npm run samples:audit || fail "sample library audit failed"
   ok "library built and audited"
@@ -134,7 +146,7 @@ step "TLS certificate for the LAN"
 if [ -f deploy/certs/player.crt ] && [ -f deploy/certs/player.key ]; then
   ok "certificate exists (deploy/certs) — delete it to regenerate"
 else
-  DEFAULT_IP=$(hostname -I 2>/dev/null | awk '{print $1}')
+  DEFAULT_IP=$(player_lan_ip)
   printf '    %sLAN address of this machine%s [%s]: ' "$BOLD" "$RESET" "${DEFAULT_IP:-none found}"
   read -r LAN_IP
   LAN_IP=${LAN_IP:-$DEFAULT_IP}
@@ -147,13 +159,12 @@ fi
 step "Starting the player (Docker Compose)"
 # ---------------------------------------------------------------------------
 
-docker compose up -d
+player_compose_up
 ok "player container running"
 
-LAN_IP=${LAN_IP:-$(hostname -I 2>/dev/null | awk '{print $1}')}
+LAN_IP=${LAN_IP:-$(player_lan_ip)}
 printf '\n%sDone.%s\n\n' "$BOLD$GREEN" "$RESET"
-printf '  %sPlayer%s   https://%s/            (from any device on your network)\n' "$BOLD" "$RESET" "${LAN_IP:-<lan-address>}"
-printf '  %sStudio%s   https://%s/index.html\n' "$BOLD" "$RESET" "${LAN_IP:-<lan-address>}"
-printf '  %sCA cert%s  http://%s/local-ca.crt  (install on other devices once)\n\n' "$BOLD" "$RESET" "${LAN_IP:-<lan-address>}"
+player_print_urls "${LAN_IP:-}"
+printf '\n'
 note "stop with:   npm run player:stop"
 note "dev server:  ./setup.sh --dev"

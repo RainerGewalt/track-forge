@@ -4,17 +4,52 @@ services:
     restart: unless-stopped
     depends_on:
       - source-api
+    environment:
+      # Fills ${PLAYER_HTTPS_PORT} in the nginx template, so the HTTP to HTTPS
+      # redirect keeps a non-default port. Only PLAYER_* variables are replaced.
+      PLAYER_HTTPS_PORT: "${PLAYER_HTTPS_PORT:-443}"
+      NGINX_ENVSUBST_FILTER: "^PLAYER_"
     ports:
       # Default HTTP/HTTPS ports so devices on the LAN reach the player at
-      # https://<host>/ without typing a port. Override for rootless setups.
+      # https://<host>/ without typing a port. Set PLAYER_HTTP_PORT and
+      # PLAYER_HTTPS_PORT (see .env.example) when 80 or 443 is taken or for
+      # rootless Docker.
       - "${PLAYER_BIND_ADDRESS:-0.0.0.0}:${PLAYER_HTTP_PORT:-80}:80"
       - "${PLAYER_BIND_ADDRESS:-0.0.0.0}:${PLAYER_HTTPS_PORT:-443}:443"
+    # Long-syntax mounts with create_host_path: false. When a file is missing
+    # (no build yet, no certificate yet), Compose stops with an error instead
+    # of creating a root-owned directory in its place.
     volumes:
-      - ./dist:/usr/share/nginx/html:ro
-      - ./deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./deploy/certs/player.crt:/etc/nginx/certs/player.crt:ro
-      - ./deploy/certs/player.key:/etc/nginx/certs/player.key:ro
-      - ./deploy/certs/local-ca.crt:/etc/nginx/certs/local-ca.crt:ro
+      - type: bind
+        source: ./dist
+        target: /usr/share/nginx/html
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./deploy/nginx.conf.template
+        target: /etc/nginx/templates/default.conf.template
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./deploy/certs/player.crt
+        target: /etc/nginx/certs/player.crt
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./deploy/certs/player.key
+        target: /etc/nginx/certs/player.key
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./deploy/certs/local-ca.crt
+        target: /etc/nginx/certs/local-ca.crt
+        read_only: true
+        bind:
+          create_host_path: false
 
   source-api:
     image: node:22-alpine
@@ -25,6 +60,15 @@ services:
       SOURCE_EDITOR_TOKEN: "${SOURCE_EDITOR_TOKEN:-}"
     command: ["node", "/app/source-api.mjs"]
     volumes:
-      - ./scripts/source-api.mjs:/app/source-api.mjs:ro
+      - type: bind
+        source: ./scripts/source-api.mjs
+        target: /app/source-api.mjs
+        read_only: true
+        bind:
+          create_host_path: false
       # Only source files are writable. The built player and service code stay read-only.
-      - ./src:/workspace/src
+      - type: bind
+        source: ./src
+        target: /workspace/src
+        bind:
+          create_host_path: false

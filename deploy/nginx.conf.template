@@ -1,17 +1,27 @@
+# nginx template. At container start the nginx image replaces the
+# PLAYER_HTTPS_PORT placeholder with the value from compose.yaml and writes
+# the result to /etc/nginx/conf.d/default.conf.
+
 server {
     listen 80;
     listen [::]:80;
     server_name _;
 
+    # Keep a non-default HTTPS port in the redirect below.
+    set $https_port_suffix ":${PLAYER_HTTPS_PORT}";
+    if ($https_port_suffix = ":443") {
+        set $https_port_suffix "";
+    }
+
     location = /local-ca.crt {
         alias /etc/nginx/certs/local-ca.crt;
         default_type application/x-x509-ca-cert;
-        add_header Content-Disposition 'attachment; filename="strudel-lan-player-ca.crt"';
+        add_header Content-Disposition 'attachment; filename="track-forge-local-ca.crt"';
         add_header X-Content-Type-Options nosniff always;
     }
 
     location / {
-        return 308 https://$host$request_uri;
+        return 308 https://$host$https_port_suffix$request_uri;
     }
 }
 
