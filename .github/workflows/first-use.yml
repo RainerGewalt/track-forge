@@ -1,0 +1,81 @@
+# L5 first-use acceptance: follow the README from outside, on a fresh clone
+# of a ref or on a published release, including the full ./setup.sh with the
+# sample download and the LAN player. See docs/TESTING.md.
+#
+# It runs on demand and after a release is published, never on pull requests:
+# the sample download alone is about 80 MB from VCSL and Wikimedia Commons.
+
+name: First use
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Git ref to clone (before a tag). Empty: the selected branch.'
+        required: false
+        default: ''
+      version:
+        description: 'Published version x.y.z to test instead of a ref (after a tag).'
+        required: false
+        default: ''
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: first-use-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  first-use:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Choose the ref or the version
+        id: target
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          INPUT_REF: ${{ inputs.ref }}
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          if [ "$EVENT_NAME" = release ]; then
+            echo "args=--version ${RELEASE_TAG#v}" >> "$GITHUB_OUTPUT"
+          elif [ -n "$INPUT_VERSION" ]; then
+            echo "args=--version ${INPUT_VERSION#v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "args=--ref ${INPUT_REF:-$GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          fi
+
+      # The run brings its own clone; it needs no dependencies of this checkout.
+      - name: First use
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          ARGS: ${{ steps.target.outputs.args }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}.git
+          WORKDIR: ${{ runner.temp }}/first-use
+        run: npm run first-use -- $ARGS --repo "$REPO_URL" --workdir "$WORKDIR"
+
+      - name: Upload the report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: first-use-report
+          path: |
+            ${{ runner.temp }}/first-use/first-use-report.md
+            ${{ runner.temp }}/first-use/first-use-report.json
+            ${{ runner.temp }}/first-use/logs/
+          if-no-files-found: warn
+
+      - name: Show the report
+        if: always()
+        env:
+          REPORT: ${{ runner.temp }}/first-use/first-use-report.md
+        run: '[ -f "$REPORT" ] && cat "$REPORT" >> "$GITHUB_STEP_SUMMARY" || true'
