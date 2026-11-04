@@ -18,11 +18,11 @@ import { readJson, writeJson, appendJsonl, readJsonl } from './shared/manifest.m
 import { sha256File } from './shared/hash.mjs';
 import { classifyLicense, VERDICT } from './shared/license.mjs';
 import { getCommonsFileInfo, commonsMetadataProblems } from './shared/wikimedia.mjs';
+import { restoreRecorded } from './shared/restore.mjs';
 import {
   rawDir,
   licensesDir,
   candidatesDir,
-  libraryRoot,
   manifestFiles,
 } from './shared/paths.mjs';
 
@@ -47,63 +47,6 @@ function extensionFor(mime, fileUrl) {
   if (mime === 'audio/wav' || mime === 'audio/x-wav') return 'wav';
   if (mime === 'audio/mpeg') return 'mp3';
   return 'bin';
-}
-
-async function fileExists(filePath) {
-  try {
-    await fs.access(filePath);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-// Re-download recorded Wikimedia Commons files that are missing locally. The
-// license is re-checked at Commons first; the file comes from its recorded
-// URL and must match the recorded size and SHA-256. The manifest and the
-// stored license evidence stay as they are.
-async function restoreRecorded(recorded) {
-  let restored = 0;
-  const failed = [];
-
-  for (const entry of recorded) {
-    if (entry.source !== 'wikimedia' || (await fileExists(path.join(libraryRoot, entry.localPath)))) {
-      continue;
-    }
-
-    const label = `${entry.family} <- ${entry.title}`;
-    const info = await getCommonsFileInfo(entry.title).catch(() => null);
-    const problems = info ? commonsMetadataProblems(info) : ['metadata lookup failed'];
-    const verdict = info ? classifyLicense(info.licenseShortName || info.license, info.licenseUrl) : null;
-
-    if (problems.length > 0 || verdict?.verdict !== VERDICT.accept) {
-      failed.push(`${label}: license re-check failed (${[...problems, verdict?.reason].filter(Boolean).join('; ')})`);
-      continue;
-    }
-
-    const localPath = path.join(libraryRoot, entry.localPath);
-    await fs.mkdir(path.dirname(localPath), { recursive: true });
-
-    let bytes;
-    try {
-      bytes = await downloadToFile(entry.fileUrl, localPath);
-    } catch (error) {
-      failed.push(`${label}: ${error.message}`);
-      continue;
-    }
-
-    const checksum = await sha256File(localPath);
-    if (checksum !== entry.sha256 || (entry.bytes && bytes !== entry.bytes)) {
-      await fs.rm(localPath, { force: true });
-      failed.push(`${label}: ${entry.fileUrl} no longer matches the recorded SHA-256`);
-      continue;
-    }
-
-    restored += 1;
-    console.log(`✓ restored ${label} (${Math.round(bytes / 1024)} kB, sha256 verified)`);
-  }
-
-  return { restored, failed };
 }
 
 async function main() {
