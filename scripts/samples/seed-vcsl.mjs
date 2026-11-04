@@ -1,11 +1,12 @@
 // Seed the local sample library from the Versilian Community Sample Library.
 //
 // VCSL is a CC0 1.0 library (LICENSE at the repository root). This script
-// never clones the multi-gigabyte repository: it pins the current head
-// commit, inspects the git tree via the GitHub API, selects a small,
-// deterministic set of musically relevant files, and downloads only those.
+// never clones the multi-gigabyte repository: it uses the commit pinned in
+// manifests/sources.json, inspects the git tree via the GitHub API, selects a
+// small, deterministic set of musically relevant files, and downloads only
+// those. --refresh moves the pin to the current head of the branch.
 //
-// Usage: node scripts/samples/seed-vcsl.mjs [--dry-run]
+// Usage: node scripts/samples/seed-vcsl.mjs [--dry-run] [--refresh]
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -59,8 +60,7 @@ const SELECTION = [
   { family: 'memory', bank: 'psalterybow', match: /Psaltery.*BowedPsaltery_(C4|D4|E4)_Main_LongBow_rr[12]/, take: 3 },
   { family: 'memory', bank: 'psalterypluck', match: /Psaltery.*BowedPsaltery_(C4|E4|A#3)_Main_Pluck_rr1/, take: 3 },
 
-  // Jungle extension: wooden bars, hat ticks and high toms for the dark
-  // jungle re-voicing of the series.
+  // Extension: wooden bars, hat ticks and high toms.
   { family: 'memory', bank: 'balafonsoft', match: /Balafon\/Soft Mallet\/EthnicXylo_softM_(C#3|C4|F3|F4)_vl2/, take: 4 },
   { family: 'memory', bank: 'balafonhard', match: /Balafon\/Hard Mallet\/EthnicXylo_hardM_(C#3|C4|C5|F3|F4)_vl2/, take: 5 },
   { family: 'seed', bank: 'hihat', match: /Hi-Hat Cymbal\/HiHat_(Close_rr1|HitC_v[123]_rr1|HitLoose_rr1)/, take: 5 },
@@ -115,10 +115,22 @@ async function loadTree(commitSha) {
 
 async function main() {
   const dryRun = process.argv.includes('--dry-run');
+  const refresh = process.argv.includes('--refresh');
+  const sources = await readJson(manifestFiles.sources, {});
+  const pinnedSha = sources.vcsl?.commit ?? null;
+  let commitSha = pinnedSha;
 
-  const branch = await fetchJson(`https://api.github.com/repos/${REPO}/branches/${BRANCH}`);
-  const commitSha = branch.commit.sha;
-  console.log(`VCSL ${BRANCH} @ ${commitSha}`);
+  if (!commitSha || refresh) {
+    const branch = await fetchJson(`https://api.github.com/repos/${REPO}/branches/${BRANCH}`);
+    commitSha = branch.commit.sha;
+    console.log(`VCSL ${BRANCH} @ ${commitSha}`);
+  } else {
+    console.log(`VCSL pinned @ ${commitSha} (--refresh moves the pin to the current ${BRANCH})`);
+  }
+
+  // Provenance files only change when the pinned commit changes, so a fresh
+  // clone does not rewrite them with a new timestamp.
+  const pinChanged = commitSha !== pinnedSha;
 
   const tree = await loadTree(commitSha);
   const blobs = tree.tree.filter((entry) => entry.type === 'blob');
@@ -134,10 +146,12 @@ async function main() {
     throw new Error('VCSL LICENSE no longer reads as CC0 1.0 — stopping, manual review needed.');
   }
 
-  if (!dryRun) {
+  const provenanceFile = path.join(licenseDir, 'PROVENANCE.md');
+
+  if (!dryRun && (pinChanged || !(await fileExists(provenanceFile)))) {
     await fs.writeFile(path.join(licenseDir, 'LICENSE'), licenseText);
     await fs.writeFile(
-      path.join(licenseDir, 'PROVENANCE.md'),
+      provenanceFile,
       [
         '# VCSL license evidence',
         '',
@@ -244,8 +258,7 @@ async function main() {
     console.log(`✓ ${rule.family}/${rule.bank} <- ${fileName} (${Math.round(bytes / 1024)} kB)`);
   }
 
-  if (!dryRun) {
-    const sources = await readJson(manifestFiles.sources, {});
+  if (!dryRun && pinChanged) {
     sources.vcsl = {
       repository: REPO_URL,
       branch: BRANCH,

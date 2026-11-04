@@ -5,6 +5,10 @@
 // metadata immediately before download (defense in depth), stores the
 // provider metadata snapshot as license evidence, and records provenance.
 //
+// It first restores Wikimedia Commons files that manifests/downloads.jsonl
+// records but that are missing locally (a fresh clone has the manifest, not
+// the audio). A restored file must match its recorded size and SHA-256.
+//
 // Usage: node scripts/samples/download.mjs [--limit N]
 
 import fs from 'node:fs/promises';
@@ -14,7 +18,13 @@ import { readJson, writeJson, appendJsonl, readJsonl } from './shared/manifest.m
 import { sha256File } from './shared/hash.mjs';
 import { classifyLicense, VERDICT } from './shared/license.mjs';
 import { getCommonsFileInfo, commonsMetadataProblems } from './shared/wikimedia.mjs';
-import { rawDir, licensesDir, candidatesDir, manifestFiles } from './shared/paths.mjs';
+import {
+  rawDir,
+  licensesDir,
+  candidatesDir,
+  libraryRoot,
+  manifestFiles,
+} from './shared/paths.mjs';
 
 const queueFile = path.join(candidatesDir, 'verified-queue.json');
 
@@ -39,6 +49,63 @@ function extensionFor(mime, fileUrl) {
   return 'bin';
 }
 
+async function fileExists(filePath) {
+  try {
+    await fs.access(filePath);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Re-download recorded Wikimedia Commons files that are missing locally. The
+// license is re-checked at Commons first; the file comes from its recorded
+// URL and must match the recorded size and SHA-256. The manifest and the
+// stored license evidence stay as they are.
+async function restoreRecorded(recorded) {
+  let restored = 0;
+  const failed = [];
+
+  for (const entry of recorded) {
+    if (entry.source !== 'wikimedia' || (await fileExists(path.join(libraryRoot, entry.localPath)))) {
+      continue;
+    }
+
+    const label = `${entry.family} <- ${entry.title}`;
+    const info = await getCommonsFileInfo(entry.title).catch(() => null);
+    const problems = info ? commonsMetadataProblems(info) : ['metadata lookup failed'];
+    const verdict = info ? classifyLicense(info.licenseShortName || info.license, info.licenseUrl) : null;
+
+    if (problems.length > 0 || verdict?.verdict !== VERDICT.accept) {
+      failed.push(`${label}: license re-check failed (${[...problems, verdict?.reason].filter(Boolean).join('; ')})`);
+      continue;
+    }
+
+    const localPath = path.join(libraryRoot, entry.localPath);
+    await fs.mkdir(path.dirname(localPath), { recursive: true });
+
+    let bytes;
+    try {
+      bytes = await downloadToFile(entry.fileUrl, localPath);
+    } catch (error) {
+      failed.push(`${label}: ${error.message}`);
+      continue;
+    }
+
+    const checksum = await sha256File(localPath);
+    if (checksum !== entry.sha256 || (entry.bytes && bytes !== entry.bytes)) {
+      await fs.rm(localPath, { force: true });
+      failed.push(`${label}: ${entry.fileUrl} no longer matches the recorded SHA-256`);
+      continue;
+    }
+
+    restored += 1;
+    console.log(`✓ restored ${label} (${Math.round(bytes / 1024)} kB, sha256 verified)`);
+  }
+
+  return { restored, failed };
+}
+
 async function main() {
   const limitIndex = process.argv.indexOf('--limit');
   const limit = limitIndex >= 0 ? Number(process.argv[limitIndex + 1]) : Infinity;
@@ -47,6 +114,7 @@ async function main() {
   const rejected = await readJson(manifestFiles.rejected, []);
   const existing = await readJsonl(manifestFiles.downloads);
   const alreadyDownloaded = new Set(existing.map((entry) => entry.canonicalUrl).filter(Boolean));
+  const restore = await restoreRecorded(existing);
 
   const remaining = [];
   let downloaded = 0;
@@ -135,7 +203,15 @@ async function main() {
 
   await writeJson(queueFile, remaining);
   await writeJson(manifestFiles.rejected, rejected);
-  console.log(`done: ${downloaded} downloaded, ${remaining.length} left in queue`);
+  console.log(
+    `done: ${restore.restored} restored, ${downloaded} downloaded, ${remaining.length} left in queue`,
+  );
+
+  if (restore.failed.length > 0) {
+    console.error(`! could not restore ${restore.failed.length} recorded Wikimedia Commons files:`);
+    for (const problem of restore.failed) console.error(`  - ${problem}`);
+    process.exitCode = 1;
+  }
 }
 
 main().catch((error) => {

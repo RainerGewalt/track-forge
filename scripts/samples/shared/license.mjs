@@ -1,4 +1,4 @@
-// License policy for the initial Black Organic Trance sample library.
+// License policy for the sample library.
 //
 // The policy is deliberately strict: only CC0 1.0 (and canonical explicit
 // public-domain dedications) are accepted automatically. Everything that is

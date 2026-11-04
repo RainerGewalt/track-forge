@@ -11,7 +11,8 @@
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { readJson, writeJson } from './shared/manifest.mjs';
+import { readJson } from './shared/manifest.mjs';
+import { writeGeneratedJson } from '../shared/generated-json.mjs';
 import { sha256File } from './shared/hash.mjs';
 import { classifyLicense, VERDICT } from './shared/license.mjs';
 import { libraryRoot, publicAudioDir, publicLibraryDir, manifestFiles } from './shared/paths.mjs';
@@ -100,7 +101,7 @@ async function main() {
     problems,
   };
 
-  await writeJson(manifestFiles.auditReport, report);
+  await writeGeneratedJson(manifestFiles.auditReport, report);
 
   console.log(JSON.stringify(stats, null, 2));
 

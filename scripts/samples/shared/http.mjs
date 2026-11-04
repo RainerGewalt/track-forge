@@ -6,7 +6,7 @@ import fs from 'node:fs/promises';
 // rejects header values with characters above U+00FF (e.g. an em dash).
 const CONTACT =
   process.env.SAMPLE_CURATOR_CONTACT ?? 'unset - see scripts/samples/shared/http.mjs';
-const USER_AGENT = `StrudelTrackForge-SampleCurator/0.1 (local music project; contact: ${CONTACT})`;
+const USER_AGENT = `TrackForge-SampleCurator/0.1 (local music project; contact: ${CONTACT})`;
 
 // Minimum politeness delay per host, in milliseconds.
 const HOST_DELAY_MS = {
