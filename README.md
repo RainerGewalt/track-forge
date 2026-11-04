@@ -161,7 +161,9 @@ src/pieces/night-signal/
 └── piece.json     # metadata, timeline, rights and creative guardrails
 ```
 
-Tracks are discovered automatically. Use the included
+The new `main.strudel` is a one-minute, synth-only arrangement (kick, lead and
+drone) that matches its `piece.json`, so the track plays right away. Tracks are
+discovered automatically. Use the included
 [`example-track`](src/pieces/example-track/) as a readable reference, then follow
 the short [track creation guide](docs/creating-a-track.md).
 
@@ -182,14 +184,29 @@ With Docker Compose and OpenSSL installed, run:
 ./setup.sh
 ```
 
-The guided setup builds the curated CC0 sample library (about 80 MB), timeline
-previews, app and local TLS certificate, then starts nginx.
+The guided setup downloads the curated CC0 sample library (about 80 MB from
+VCSL on GitHub and Wikimedia Commons), generates the timeline previews, builds
+the app, creates a local TLS certificate for the LAN address it asks for, then
+starts nginx. `./setup.sh --no-samples` skips the sample download; the example
+track is synth-only and still plays.
 
 | Open | Purpose |
 | --- | --- |
 | `https://<lan-ip>/` | Focused mobile player |
 | `https://<lan-ip>/index.html` | Full Studio |
 | `http://<lan-ip>/local-ca.crt` | Local CA to install once on another device |
+
+The player uses ports 80 and 443. If another program already uses them, or with
+rootless Docker, choose other ports. Setup checks them before it starts
+anything:
+
+```sh
+PLAYER_HTTP_PORT=8080 PLAYER_HTTPS_PORT=8443 ./setup.sh
+```
+
+You can also set both in `.env` (see [`.env.example`](.env.example)). The
+addresses then carry the port, for example `https://<lan-ip>:8443/`; setup
+prints the exact URLs. Stop the player with `npm run player:stop`.
 
 HTTPS is necessary for browser audio worklets outside `localhost`. Keep the
 generated private CA key on the host machine and use the source service only on
@@ -218,11 +235,12 @@ artwork under `public/images/tracks/`, then run `npm run images:manifest`.
 | `npm run images:manifest` | Refresh artwork discovered by filename |
 | `npm run samples:seed` | Seed the pinned VCSL source |
 | `npm run samples:discover` | Find candidates from supported providers |
-| `npm run samples:download` | Download only provider-verified CC0 candidates |
+| `npm run samples:download` | Restore recorded Wikimedia Commons files; download provider-verified CC0 candidates |
 | `npm run samples:curate` | Normalize the approved selection |
 | `npm run samples:build` | Build the local Strudel sample bank |
 | `npm run samples:audit` | Verify provenance and checksums |
-| `npm run player:start` / `npm run player:stop` | Start or stop the LAN player |
+| `npm run player:start` | Rebuild and start the LAN player (after `./setup.sh` created the certificate) |
+| `npm run player:stop` | Stop the LAN player |
 
 </details>
 
