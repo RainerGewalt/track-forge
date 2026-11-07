@@ -16,6 +16,11 @@ All notable changes to Track Forge are listed here. The format follows
   player over TLS against the generated local CA. Testing levels in
   `docs/TESTING.md`.
 
+### Changed
+
+- The wording of one 0.1.0 entry under "Removed" is more general; what 0.1.0
+  removed is unchanged.
+
 ### Fixed
 
 - `npm run player:start` on a fresh clone no longer lets Docker create
@@ -78,7 +83,7 @@ First tagged release.
 ### Removed
 
 - `./setup.sh --image`, which pulled container images that were never public.
-- Project-specific `aiHooks` metadata and AI agent instructions.
+- Removed internal development-only metadata and instructions.
 - The duplicate example under `docs/examples/`; the example track lives in
   `src/pieces/example-track/`.
 
