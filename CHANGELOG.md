@@ -6,6 +6,21 @@ All notable changes to Track Forge are listed here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- `npm run first-use` (`scripts/first-use.sh`): walks through the README from
+  a fresh clone, or with `RELEASE=x.y.z` against the published tag and the
+  hosted demo, and stops at the first step that does not behave as
+  documented: the player before setup, the fastest start, a new track
+  through validation, tests and build, a refused occupied port, and the LAN
+  player over TLS against the generated local CA. Testing levels in
+  `docs/TESTING.md`.
+
+### Changed
+
+- The wording of one 0.1.0 entry under "Removed" is more general; what 0.1.0
+  removed is unchanged.
+
 ### Fixed
 
 - `npm run player:start` on a fresh clone no longer lets Docker create
@@ -68,7 +83,7 @@ First tagged release.
 ### Removed
 
 - `./setup.sh --image`, which pulled container images that were never public.
-- Project-specific `aiHooks` metadata and AI agent instructions.
+- Removed internal development-only metadata and instructions.
 - The duplicate example under `docs/examples/`; the example track lives in
   `src/pieces/example-track/`.
 
