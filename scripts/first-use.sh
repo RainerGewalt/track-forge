@@ -102,6 +102,19 @@ run_cli() {
 	ok "$(grep -Em1 -- "$pattern" <<<"$out" | sed 's/\x1b\[[0-9;]*m//g' | sed 's/^ *//')  [exit $code: ${*//$work/<work>}]"
 }
 
+# wait_http URL WHAT [CURL ARGS...]: wait until URL answers with a success.
+# Docker publishes a port before the server behind it accepts requests, so an
+# open port alone does not mean the page is served.
+wait_http() {
+	local url=$1 what=$2 i
+	shift 2
+	for ((i = 0; i < WAIT * 5; i++)); do
+		curl -fsS -o /dev/null --max-time 5 "$@" "$url" 2>/dev/null && return 0
+		sleep 0.2
+	done
+	fail "$what did not answer $url within ${WAIT}s"
+}
+
 # page URL TITLE [CURL ARGS...]: the URL answers 200 and has the title.
 page() {
 	local url=$1 title=$2 body
@@ -165,6 +178,7 @@ setsid ./setup.sh --dev --no-samples >"$work/logs/dev.log" 2>&1 &
 dev_pid=$!
 # setup installs the dependencies first, which can take minutes on a fresh clone.
 wait_port 5173 "the Vite dev server" $((WAIT * 5))
+wait_http "http://127.0.0.1:5173/" "the Vite dev server"
 page "http://127.0.0.1:5173/" "Track Forge"
 page "http://127.0.0.1:5173/player.html" "Track Forge — Listening player"
 grep -q 'all tracks valid' "$work/logs/dev.log" || fail "setup did not validate the tracks"
@@ -211,8 +225,8 @@ player_up=1
 printf '127.0.0.1\n' | PLAYER_HTTP_PORT=$HTTP_PORT PLAYER_HTTPS_PORT=$HTTPS_PORT ./setup.sh --no-samples >"$work/logs/player.log" 2>&1 ||
 	fail "./setup.sh for the LAN player: $(tail -n 5 "$work/logs/player.log")"
 grep -q "https://127.0.0.1:$HTTPS_PORT/" "$work/logs/player.log" || fail "setup did not print the player URL with the port"
-wait_port "$HTTPS_PORT" "the player"
 ca="$clone/deploy/certs/local-ca.crt"
+wait_http "https://127.0.0.1:$HTTPS_PORT/" "the player" --cacert "$ca"
 page "https://127.0.0.1:$HTTPS_PORT/" "Track Forge — Listening player" --cacert "$ca"
 page "https://127.0.0.1:$HTTPS_PORT/index.html" "Track Forge" --cacert "$ca"
 curl -fsS --max-time 20 "http://127.0.0.1:$HTTP_PORT/local-ca.crt" | grep -q 'BEGIN CERTIFICATE' ||
