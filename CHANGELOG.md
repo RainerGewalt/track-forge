@@ -6,6 +6,8 @@ All notable changes to Track Forge are listed here. The format follows
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-11-07
+
 ### Added
 
 - `npm run first-use` (`scripts/first-use.sh`): walks through the README from
@@ -87,5 +89,6 @@ First tagged release.
 - The duplicate example under `docs/examples/`; the example track lives in
   `src/pieces/example-track/`.
 
-[Unreleased]: https://github.com/RainerGewalt/track-forge/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/RainerGewalt/track-forge/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/RainerGewalt/track-forge/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/RainerGewalt/track-forge/releases/tag/v0.1.0
