@@ -77,9 +77,13 @@ check that it is identical.
 
 Recorded controls:
 
-- Certificate paths before setup (fixed after 0.1.0): with the
-  certificate check removed from `scripts/player-stack.sh start`,
-  `npm run first-use` fails at its first player step; restored, it passes.
+- Certificate paths before setup (fixed after 0.1.0): with
+  `player_require_certificates` removed from `scripts/player-stack.sh
+  start`, `npm run player:start` on a fresh clone runs on into validation
+  and build and ends with an unrelated error (`vite: not found`, exit 127)
+  instead of naming `./setup.sh`, so the first player step of
+  `npm run first-use` fails on its exit code and message; restored, it
+  passes.
 
 ## Commands
 

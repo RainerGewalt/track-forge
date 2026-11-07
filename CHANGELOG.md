@@ -6,6 +6,16 @@ All notable changes to Track Forge are listed here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- `npm run first-use` (`scripts/first-use.sh`): walks through the README from
+  a fresh clone, or with `RELEASE=x.y.z` against the published tag and the
+  hosted demo, and stops at the first step that does not behave as
+  documented: the player before setup, the fastest start, a new track
+  through validation, tests and build, a refused occupied port, and the LAN
+  player over TLS against the generated local CA. Testing levels in
+  `docs/TESTING.md`.
+
 ### Fixed
 
 - `npm run player:start` on a fresh clone no longer lets Docker create
