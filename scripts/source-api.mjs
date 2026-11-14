@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
-import { readdir, readFile, rename, unlink, writeFile } from 'node:fs/promises';
+import * as defaultFileSystem from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -9,6 +10,56 @@ import { fileURLToPath } from 'node:url';
 const DEFAULT_PORT = 3000;
 const MAX_SOURCE_BYTES = 1024 * 1024;
 const SAFE_ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+// Writing is off unless SOURCE_EDITOR_TOKEN holds a long private value. The
+// value that earlier versions of .env.example set is public and never counts.
+export const MIN_EDITOR_TOKEN_LENGTH = 32;
+const PUBLIC_EXAMPLE_TOKENS = new Set(['replace-with-a-long-random-token']);
+const TOKEN_HINT = 'Generate one with: openssl rand -hex 24';
+
+export function editorTokenProblem(editorToken) {
+  const token = String(editorToken ?? '').trim();
+
+  if (!token) {
+    return 'SOURCE_EDITOR_TOKEN is not set.';
+  }
+
+  if (PUBLIC_EXAMPLE_TOKENS.has(token)) {
+    return `SOURCE_EDITOR_TOKEN is the public example value from .env.example. ${TOKEN_HINT}`;
+  }
+
+  if (token.length < MIN_EDITOR_TOKEN_LENGTH) {
+    return `SOURCE_EDITOR_TOKEN is shorter than ${MIN_EDITOR_TOKEN_LENGTH} characters. ${TOKEN_HINT}`;
+  }
+
+  return null;
+}
+
+// Strudel code is JavaScript: Strudel parses it as a script that may use
+// top-level await and runs it inside an async function. Compiling it the
+// same way, without calling it, refuses a source that cannot be evaluated
+// because it does not parse. Whether it plays (sounds, mini-notation, names)
+// only the browser can tell; that is what Try Draft is for.
+const AsyncFunction = Object.getPrototypeOf(async () => {}).constructor;
+
+export function sourceSyntaxProblem(code) {
+  if (!code.trim()) {
+    return 'The Strudel source is empty.';
+  }
+
+  try {
+    new AsyncFunction(code);
+    return null;
+  } catch (error) {
+    return `The Strudel source does not parse: ${error.message}`;
+  }
+}
+
+// The previous version of a source is kept next to it, hidden, and is not a
+// source itself: pieces/<id>/.main.strudel.bak.
+export function backupPathFor(filePath) {
+  return path.join(path.dirname(filePath), `.${path.basename(filePath)}.bak`);
+}
 
 export function revisionFor(code) {
   return createHash('sha256').update(code, 'utf8').digest('hex');
@@ -40,7 +91,8 @@ export function sourcePathFor(sourceRoot, locator) {
 
 export function createSourceServer({ sourceRoot, editorToken = '' }) {
   const root = path.resolve(sourceRoot);
-  const token = String(editorToken).trim();
+  const tokenProblem = editorTokenProblem(editorToken);
+  const token = tokenProblem ? '' : String(editorToken).trim();
   const writeQueues = new Map();
 
   return createServer(async (request, response) => {
@@ -67,7 +119,7 @@ export function createSourceServer({ sourceRoot, editorToken = '' }) {
           if (!token) {
             throw new SourceApiError(
               503,
-              'Source writing is disabled. Set SOURCE_EDITOR_TOKEN and restart the service.',
+              `Source writing is disabled: ${tokenProblem} Set a long private SOURCE_EDITOR_TOKEN and restart the service.`,
             );
           }
 
@@ -200,7 +252,11 @@ async function readSource(sourceRoot, locator) {
   }
 }
 
-export async function replaceSource(sourceRoot, locator, body) {
+// Validates first, then writes: the new code and a copy of the current file
+// go to temporary files in the same directory, the copy becomes the backup,
+// and only then does the new code replace the source in one rename. Any
+// failure before that rename leaves the source as it was.
+export async function replaceSource(sourceRoot, locator, body, { fileSystem = defaultFileSystem } = {}) {
   if (!body || typeof body.code !== 'string') {
     throw new SourceApiError(400, 'The request must include Strudel code.');
   }
@@ -214,10 +270,10 @@ export async function replaceSource(sourceRoot, locator, body) {
   }
 
   const filePath = sourcePathFor(sourceRoot, locator);
-  let currentCode;
+  let currentBytes;
 
   try {
-    currentCode = await readFile(filePath, 'utf8');
+    currentBytes = await fileSystem.readFile(filePath);
   } catch (error) {
     if (error.code === 'ENOENT') {
       throw new SourceApiError(404, 'The selected source file does not exist.');
@@ -225,7 +281,7 @@ export async function replaceSource(sourceRoot, locator, body) {
     throw error;
   }
 
-  const currentRevision = revisionFor(currentCode);
+  const currentRevision = revisionFor(currentBytes.toString('utf8'));
 
   if (currentRevision !== body.expectedRevision) {
     throw new SourceApiError(409, 'The source changed on disk after it was opened.', {
@@ -233,20 +289,47 @@ export async function replaceSource(sourceRoot, locator, body) {
     });
   }
 
-  const temporaryPath = path.join(
-    path.dirname(filePath),
-    `.${path.basename(filePath)}.${process.pid}.${randomBytes(6).toString('hex')}.tmp`,
-  );
+  const syntaxProblem = sourceSyntaxProblem(body.code);
+
+  if (syntaxProblem) {
+    throw new SourceApiError(422, `${syntaxProblem} The file was not changed.`);
+  }
+
+  const temporaryPath = temporaryPathFor(filePath);
+  const backupTemporaryPath = temporaryPathFor(filePath);
 
   try {
-    await writeFile(temporaryPath, body.code, { encoding: 'utf8', mode: 0o644 });
-    await rename(temporaryPath, filePath);
+    await writeDurably(fileSystem, temporaryPath, Buffer.from(body.code, 'utf8'));
+    await writeDurably(fileSystem, backupTemporaryPath, currentBytes);
+    await fileSystem.rename(backupTemporaryPath, backupPathFor(filePath));
+    await fileSystem.rename(temporaryPath, filePath);
   } catch (error) {
-    await unlink(temporaryPath).catch(() => {});
+    await fileSystem.unlink(temporaryPath).catch(() => {});
+    await fileSystem.unlink(backupTemporaryPath).catch(() => {});
     throw error;
   }
 
   return sourceRecord(locator, body.code);
+}
+
+function temporaryPathFor(filePath) {
+  return path.join(
+    path.dirname(filePath),
+    `.${path.basename(filePath)}.${process.pid}.${randomBytes(6).toString('hex')}.tmp`,
+  );
+}
+
+// The data reaches the disk before the rename makes it visible, so a crash
+// cannot leave an empty file in place of the source.
+async function writeDurably(fileSystem, filePath, data) {
+  const handle = await fileSystem.open(filePath, 'wx', 0o644);
+
+  try {
+    await handle.writeFile(data);
+    await handle.sync();
+  } finally {
+    await handle.close();
+  }
 }
 
 function sourceRecord(locator, code) {
@@ -335,8 +418,14 @@ if (isEntryPoint) {
   const editorToken = process.env.SOURCE_EDITOR_TOKEN ?? '';
   const port = Number(process.env.SOURCE_API_PORT) || DEFAULT_PORT;
   const server = createSourceServer({ sourceRoot, editorToken });
+  const tokenProblem = editorTokenProblem(editorToken);
 
   server.listen(port, '0.0.0.0', () => {
     console.log(`Source API listening on port ${port}.`);
+    console.log(
+      tokenProblem
+        ? `Source writing is off: ${tokenProblem}`
+        : 'Source writing is on for requests with the editor token.',
+    );
   });
 }

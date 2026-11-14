@@ -12,3 +12,6 @@ public/samples/library/audio/
 
 # Locally generated TLS material for the LAN player
 deploy/certs/
+
+# Previous version of a source, kept by the source service on every write
+*.strudel.bak

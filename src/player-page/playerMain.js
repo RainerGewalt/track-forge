@@ -14,11 +14,13 @@ import {
   getMainScene,
 } from '../player.js';
 import { installDestinationTap, createSpectrumView } from './monitor.js';
+import { killAudio, openAudio } from '../audioMaster.js';
 import { fetchPreview, createLaneView } from './lanes.js';
 import { artistProfile, hasImage, imagePosition, resolveArtwork } from '../visuals.js';
 import { hydratePieceSources } from '../sourceSync.js';
 import { appUrl } from '../appUrl.js';
-import { attributionHtml } from '../attribution.js';
+import { SOURCE_URL, attributionHtml } from '../attribution.js';
+import { APP_MODE, DEMO_NOTICE } from '../appMode.js';
 
 // The tap must be in place before the first engine connects anything.
 installDestinationTap();
@@ -63,7 +65,9 @@ const root = document.querySelector('#player-root');
 const profileIsPlaceholder = artistProfile.artistName === 'Your Artist Name';
 const playerTitle = profileIsPlaceholder ? 'Strudel listening room' : artistProfile.artistName;
 const playerMotto = profileIsPlaceholder
-  ? 'Complete tracks built from live-coded patterns, served from your own machine.'
+  ? APP_MODE === 'demo'
+    ? 'Complete tracks built from live-coded patterns. This demo plays the example track in your browser.'
+    : 'Complete tracks built from live-coded patterns, served from your own machine.'
   : artistProfile.motto;
 
 root.innerHTML = `
@@ -85,6 +89,15 @@ root.innerHTML = `
       </div>
       <a class="pp-studio-link" href="${appUrl('index.html')}">Open Studio</a>
     </header>
+
+    ${
+      APP_MODE === 'demo'
+        ? `<p class="pp-mode-notice" data-mode-notice>
+            <strong>${DEMO_NOTICE.player}</strong>
+            To listen to your own tracks on your network, <a href="${SOURCE_URL}#put-the-player-on-your-local-network">run Track Forge locally</a>.
+          </p>`
+        : ''
+    }
 
     <section class="pp-intro" aria-labelledby="player-intro-title">
       <p class="pp-eyebrow">Code becomes a complete arrangement</p>
@@ -116,6 +129,7 @@ root.innerHTML = `
       <div class="pp-lanes-wrap" data-lanes aria-hidden="true" hidden></div>
 
       <div class="pp-controls">
+        <button type="button" data-action="reset" aria-label="Back to start" title="Back to start">⏮</button>
         <button type="button" data-action="back30" aria-label="Back 30 seconds">−30</button>
         <button type="button" class="pp-play" data-action="toggle">
           <span data-play-icon aria-hidden="true"></span>
@@ -150,6 +164,9 @@ function createHiddenEngine() {
 const transport = createTransport({
   engines: { full: createHiddenEngine(), channels: [] },
   onChange: render,
+  // Stop means stop, as in the Studio: the master output is killed so
+  // reverb tails and notes that were already scheduled do not ring on.
+  hooks: { onSilence: killAudio, onWake: openAudio },
 });
 
 const spectrum = createSpectrumView(root.querySelector('[data-spectrum]'));
@@ -186,6 +203,16 @@ async function loadLanes(piece) {
 
 function selectedPiece() {
   return playable.find((piece) => piece.id === selectedId) ?? null;
+}
+
+// Where Play continues for a track: at the position a Stop kept for that
+// track, otherwise from the start. Back to start (transport.reset) clears it.
+function resumePositionFor(pieceId) {
+  const playback = transport.getState();
+
+  return playback.status === 'stopped' && playback.activeTrack?.id === pieceId
+    ? playback.elapsedSeconds
+    : 0;
 }
 
 async function playSelected(offsetSeconds = 0) {
@@ -476,7 +503,7 @@ root.addEventListener('click', async (event) => {
 
     selectedId = id;
     loadLanes(playable.find((candidate) => candidate.id === id));
-    await playSelected(0);
+    await playSelected(resumePositionFor(id));
     render();
     return;
   }
@@ -485,8 +512,14 @@ root.addEventListener('click', async (event) => {
     if (playback.status === 'playing') {
       await transport.stop();
     } else {
-      await playSelected(0);
+      await playSelected(resumePositionFor(piece?.id));
     }
+    render();
+    return;
+  }
+
+  if (action === 'reset') {
+    await transport.reset();
     render();
     return;
   }

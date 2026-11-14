@@ -9,9 +9,18 @@
 
 PLAYER_CERT_DIR=deploy/certs
 PLAYER_CERT_FILES=(player.crt player.key local-ca.crt)
+PLAYER_STACK_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 if ! declare -F fail >/dev/null; then
   fail() { printf '✗ %s\n' "$1" >&2; exit 1; }
+fi
+
+if ! declare -F warn >/dev/null; then
+  warn() { printf '! %s\n' "$1" >&2; }
+fi
+
+if ! declare -F note >/dev/null; then
+  note() { printf '  %s\n' "$1"; }
 fi
 
 # player_setting NAME DEFAULT: value from the environment, then .env, then DEFAULT.
@@ -28,6 +37,31 @@ player_setting() {
 
 player_http_port() { player_setting PLAYER_HTTP_PORT 80; }
 player_https_port() { player_setting PLAYER_HTTPS_PORT 443; }
+
+# The source service writes only with a long private SOURCE_EDITOR_TOKEN and
+# refuses the public example value; this says which case applies. The check
+# itself is the service's own (scripts/source-api.mjs).
+player_check_editor_token() {
+  local token problem
+  token=$(player_setting SOURCE_EDITOR_TOKEN '')
+
+  if [ -z "$token" ]; then
+    note "source writing stays off: SOURCE_EDITOR_TOKEN is not set (see .env.example)"
+    return 0
+  fi
+
+  # Path and token go through the environment: an argument would make
+  # source-api.mjs start as a server.
+  problem=$(SOURCE_EDITOR_TOKEN="$token" PLAYER_SOURCE_API="$PLAYER_STACK_ROOT/scripts/source-api.mjs" \
+    node --input-type=module -e "
+      const { editorTokenProblem } = await import(process.env.PLAYER_SOURCE_API);
+      process.stdout.write(editorTokenProblem(process.env.SOURCE_EDITOR_TOKEN) ?? '');
+    " </dev/null) || problem='the token could not be checked'
+
+  if [ -n "$problem" ]; then
+    warn "source writing stays off: $problem"
+  fi
+}
 
 player_lan_ip() {
   { hostname -I 2>/dev/null || ipconfig getifaddr en0 2>/dev/null || true; } | awk '{print $1}'
@@ -138,6 +172,7 @@ if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
     start)
       player_require_certificates
       player_check_ports
+      player_check_editor_token
       npm run pieces:validate
       npm run build
       player_compose_up

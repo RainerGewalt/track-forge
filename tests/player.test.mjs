@@ -6,6 +6,7 @@ import { test } from 'node:test';
 import {
   MESSAGES,
   buildSeekedCode,
+  createEditorEngine,
   createTransport,
   formatClock,
   formatTargetDuration,
@@ -197,7 +198,7 @@ test('seeking is clamped before the end so a finite arrangement does not wrap', 
 
 // --- stop and restart ------------------------------------------------------------------
 
-test('Stop clears active playback state and is safe to press repeatedly', async () => {
+test('Stop halts playback, keeps the position and is safe to press repeatedly', async () => {
   const { transport, log, advance } = makeHarness();
 
   await transport.playFull(fullTrack);
@@ -206,13 +207,117 @@ test('Stop clears active playback state and is safe to press repeatedly', async 
   await transport.stop();
   const state = transport.getState();
   assert.equal(state.status, 'stopped');
-  assert.equal(state.elapsedSeconds, 0);
+  assert.equal(state.elapsedSeconds, 5);
+  assert.equal(state.startedAt, null);
 
   // Pressing stop again must not throw and must keep the state stable.
+  advance(3000);
   await transport.stop();
   await transport.stop();
   assert.equal(transport.getState().status, 'stopped');
+  assert.equal(transport.getState().elapsedSeconds, 5, 'time standing still while stopped does not move the position');
   assert.ok(log.filter((entry) => entry === 'full:stop').length >= 3);
+});
+
+test('Stop silences the master output, so nothing rings on past the stop', async () => {
+  let silenced = 0;
+  const log = [];
+  const transport = createTransport({
+    engines: { full: fakeEngine('full', log), channels: [] },
+    now: () => 0,
+    hooks: { onSilence: () => { silenced += 1; } },
+  });
+
+  await transport.playFull(fullTrack);
+  const before = silenced;
+  await transport.stop();
+  assert.equal(silenced, before + 1);
+});
+
+test('Play after Stop continues the same track at the kept position', async () => {
+  const { transport, engines, advance } = makeHarness();
+
+  await transport.playFull(fullTrack);
+  advance(60000);
+  await transport.stop();
+  const kept = transport.getState().elapsedSeconds;
+  assert.equal(kept, 60);
+
+  // The Studio and the player pass the kept position as the offset.
+  await transport.playFull(fullTrack, { offsetSeconds: kept });
+  const state = transport.getState();
+  assert.equal(state.status, 'playing');
+  assert.equal(state.elapsedSeconds, 60);
+  assert.notEqual(engines.full.code, fullTrack.code, 'the code is seeked to the kept position');
+  advance(2000);
+  assert.equal(transport.getState().elapsedSeconds, 62);
+});
+
+test('Back to start while stopped returns the position to zero without playing', async () => {
+  const { transport, log, advance } = makeHarness();
+
+  await transport.playFull(fullTrack);
+  advance(42000);
+  await transport.stop();
+  log.length = 0;
+
+  const result = await transport.reset();
+  assert.equal(result.ok, true);
+  assert.equal(transport.getState().status, 'stopped');
+  assert.equal(transport.getState().elapsedSeconds, 0);
+  assert.ok(!log.includes('full:evaluate'), 'back to start while stopped does not start playback');
+});
+
+test('Back to start while playing continues from the top', async () => {
+  const { transport, log, advance } = makeHarness();
+
+  await transport.playFull(fullTrack);
+  advance(42000);
+  log.length = 0;
+
+  await transport.reset();
+  assert.ok(log.indexOf('full:stop') < log.indexOf('full:evaluate'), 'the running track is stopped before it starts again');
+  assert.equal(transport.getState().status, 'playing');
+  assert.equal(transport.getState().elapsedSeconds, 0);
+});
+
+test('a stop at the end of a finite track keeps no position, so Play starts from the top', async () => {
+  const { transport, advance } = makeHarness();
+
+  await transport.playFull(fullTrack);
+  advance((fullTrack.durationSeconds + 10) * 1000);
+  await transport.stop();
+  assert.equal(transport.getState().elapsedSeconds, 0);
+});
+
+test('a track without a BPM keeps no position, because resuming needs a seek', async () => {
+  const { transport, advance } = makeHarness();
+  const { bpm, ...withoutBpm } = fullTrack;
+
+  await transport.playFull(withoutBpm);
+  advance(30000);
+  await transport.stop();
+  assert.equal(transport.getState().elapsedSeconds, 0);
+});
+
+test('a Layer Lab stop keeps no position', async () => {
+  const { transport, advance } = makeHarness();
+
+  transport.assignLayer(layerA);
+  await transport.playLab();
+  advance(30000);
+  await transport.stop();
+  assert.equal(transport.getState().elapsedSeconds, 0);
+});
+
+test('switching modes drops the kept position of the full track', async () => {
+  const { transport, advance } = makeHarness();
+
+  await transport.playFull(fullTrack);
+  advance(30000);
+  await transport.setMode('lab');
+  await transport.setMode('full');
+  assert.equal(transport.getState().elapsedSeconds, 0);
 });
 
 test('Restart re-evaluates the active full track and resets elapsed time', async () => {
@@ -415,6 +520,69 @@ test('an evaluation failure produces a visible error state', async () => {
   assert.equal(state.elapsedSeconds, 0);
 });
 
+// StrudelMirror does not reject when the code fails to evaluate: evaluate()
+// resolves, and the error arrives in an "update" event while the transport
+// is still loading. That must count as a failure, never as playback.
+test('an evaluation error reported through the update event is a failure, not playback', async () => {
+  const { transport, engines } = makeHarness();
+  engines.full.evaluate = async function evaluate() {
+    this.emitUpdate({ evalError: new Error('Unexpected token (1:22)'), pending: false });
+  };
+
+  const result = await transport.playFull(fullTrack);
+
+  assert.equal(result.ok, false);
+  assert.match(result.message, /Unexpected token \(1:22\)/);
+  const state = transport.getState();
+  assert.equal(state.status, 'error');
+  assert.equal(state.startedAt, null);
+});
+
+// StrudelMirror sends its whole state with every update, so an evaluation
+// error stays in later updates (setCode, pending) until the next successful
+// evaluation. A stale error must not fail the next playback.
+test('an error left over from an earlier evaluation does not fail the next playback', async () => {
+  const { transport, engines } = makeHarness();
+  const earlier = new Error('Unexpected token (1:22)');
+  const replState = { evalError: undefined };
+  engines.full.setCode = async function setCode(code) {
+    this.code = code;
+    this.emitUpdate({ ...replState, code });
+  };
+  engines.full.evaluate = async function evaluate() {
+    this.emitUpdate({ ...replState, pending: true });
+    replState.evalError = this.code.includes('broken') ? earlier : undefined;
+    this.emitUpdate({ ...replState, pending: false });
+  };
+
+  const failed = await transport.playFull({ ...fullTrack, code: 'broken draft' });
+  assert.equal(failed.ok, false);
+
+  const played = await transport.playFull(fullTrack);
+  assert.equal(played.ok, true, played.message);
+  assert.equal(transport.getState().status, 'playing');
+});
+
+test('the editor engine rejects when StrudelMirror keeps an evaluation error in its state', async () => {
+  const mirror = {
+    repl: { state: { evalError: undefined } },
+    setCode() {},
+    async evaluate() {
+      // What StrudelMirror 1.3.0 does: catch, record, resolve.
+      this.repl.state.evalError = new SyntaxError('Unexpected token (1:22)');
+    },
+    async stop() {},
+  };
+  const engine = createEditorEngine({ editor: mirror, addEventListener() {} });
+
+  await assert.rejects(engine.evaluate(), /Unexpected token \(1:22\)/);
+
+  mirror.evaluate = async function evaluate() {
+    this.repl.state.evalError = undefined;
+  };
+  await engine.evaluate();
+});
+
 test('a scheduler error reported by the runtime surfaces while playing', async () => {
   const { transport, engines } = makeHarness();
 
@@ -439,7 +607,7 @@ test('dismissing an error returns to a stable state', async () => {
 
 // --- elapsed clock -------------------------------------------------------------------------------
 
-test('the elapsed timer starts on play and resets on stop', async () => {
+test('the elapsed timer starts on play, holds on stop and returns to zero on back to start', async () => {
   const { transport, advance } = makeHarness();
 
   assert.equal(transport.getState().elapsedSeconds, 0);
@@ -449,6 +617,10 @@ test('the elapsed timer starts on play and resets on stop', async () => {
   assert.equal(Math.floor(transport.getState().elapsedSeconds), 194);
 
   await transport.stop();
+  advance(10000);
+  assert.equal(Math.floor(transport.getState().elapsedSeconds), 194);
+
+  await transport.reset();
   assert.equal(transport.getState().elapsedSeconds, 0);
 });
 

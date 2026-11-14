@@ -131,6 +131,22 @@ body {
   padding: 10px 14px;
 }
 
+.pp-mode-notice {
+  margin: 0 0 14px;
+  padding: 10px 14px;
+  border: 1px solid #4b3b2b;
+  border-left: 4px solid var(--ember);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 13px;
+  background: var(--panel-2);
+}
+
+.pp-mode-notice a {
+  color: inherit;
+  text-underline-offset: 3px;
+}
+
 .pp-intro {
   margin-bottom: 18px;
   padding: 18px;
@@ -313,6 +329,7 @@ body {
 
 .pp-controls {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
   padding-top: 8px;
@@ -334,6 +351,7 @@ body {
 
 .pp-clock {
   margin-left: auto;
+  white-space: nowrap;
   font-variant-numeric: tabular-nums;
   color: var(--muted);
   font-size: 14px;
@@ -550,6 +568,16 @@ button:active {
 }
 
 @media (max-width: 620px) {
+  /* The four buttons and the clock share one row on a common phone; on a
+     narrower screen the clock moves to its own line. */
+  .pp-controls {
+    gap: 6px;
+  }
+
+  .pp-controls button:not(.pp-play) {
+    padding: 8px 10px;
+  }
+
   .pp-top {
     align-items: flex-start;
     gap: 12px;

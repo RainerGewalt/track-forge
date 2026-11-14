@@ -19,7 +19,8 @@ import { drawLane } from './laneRendering.js';
 import { installAudioMaster, killAudio, openAudio } from './audioMaster.js';
 import { hydratePieceSources, savePieceSource } from './sourceSync.js';
 import { appUrl } from './appUrl.js';
-import { attributionHtml } from './attribution.js';
+import { SOURCE_URL, attributionHtml } from './attribution.js';
+import { APP_MODE, DEMO_NOTICE, draftPlayingMessage, inspectorOpenMessage } from './appMode.js';
 
 // --------------------------------------------------------------------------
 // UI state (playback state lives in the transport, not here)
@@ -59,7 +60,11 @@ app.innerHTML = `
         <div class="topbar-title">
           <p class="eyebrow">Track Forge</p>
           <h1>Turn live-coded patterns into complete tracks</h1>
-          <p class="topbar-motto">Arrange, audition and inspect your music while every track stays in plain local files.</p>
+          <p class="topbar-motto">${
+            APP_MODE === 'demo'
+              ? 'Arrange, audition and inspect a Strudel track. This demo runs the example track in your browser.'
+              : 'Arrange, audition and inspect your music while every track stays in plain local files.'
+          }</p>
         </div>
       </div>
       <nav class="topbar-actions" aria-label="Workspace destinations">
@@ -98,6 +103,14 @@ app.innerHTML = `
       </aside>
 
       <section class="stage" aria-label="Listening workspace">
+        ${
+          APP_MODE === 'demo'
+            ? `<p class="mode-notice" data-mode-notice>
+                <strong>${DEMO_NOTICE.studio}</strong>
+                To edit your own tracks and save them as files, <a href="${SOURCE_URL}#fastest-start">run Track Forge locally</a>.
+              </p>`
+            : ''
+        }
         <section class="product-intro" aria-labelledby="product-intro-title">
           <div class="product-intro-copy">
             <p class="eyebrow">See what the code is doing</p>
@@ -170,9 +183,9 @@ app.innerHTML = `
       <button type="button" data-action="close-shortcuts">Close</button>
     </header>
     <dl class="shortcut-list">
-      <div><dt>Space</dt><dd>Play or stop, depending on the current state</dd></div>
-      <div><dt>Shift + Space</dt><dd>Restart the current session</dd></div>
-      <div><dt>Escape</dt><dd>Stop all playback</dd></div>
+      <div><dt>Space</dt><dd>Play or stop; Play continues where Stop left off</dd></div>
+      <div><dt>Shift + Space</dt><dd>Back to start</dd></div>
+      <div><dt>Escape</dt><dd>Stop all playback; the position is kept</dd></div>
     </dl>
     <p class="inspector-hint">Shortcuts are ignored while typing in a text field.</p>
   </dialog>
@@ -207,7 +220,8 @@ installAudioMaster();
 
 const transport = createTransport({
   engines: {
-    // The full track runs on its own clock so Stop + Play restarts from bar 1.
+    // The full track runs on its own clock. Play after Stop continues at the
+    // kept position by seeking, as a scrub does; Back to start resets it.
     full: createEngine({ sync: false }),
     // The Layer Lab was removed: no channel engines.
     channels: [],
@@ -784,6 +798,8 @@ function renderTransport() {
       ? 'Play Full Track'
       : 'Play Layers';
   const primaryEnabled = playback.mode === 'full' ? Boolean(mainScene) || isBusy : canPlayLab || isBusy;
+  const canGoBackToStart =
+    isBusy || (playback.mode === 'full' && playback.status === 'stopped' && playback.elapsedSeconds > 0);
 
   const nowPlayingLabel =
     playback.mode === 'full'
@@ -811,7 +827,8 @@ function renderTransport() {
           <span aria-hidden="true">${primaryIcon}</span>
           <span>${primaryLabel}</span>
         </button>
-        <button type="button" data-action="transport-restart" ${isBusy ? '' : 'disabled'}>Restart</button>
+        <button type="button" class="transport-reset" data-action="transport-reset" ${canGoBackToStart ? '' : 'disabled'}
+          aria-label="Back to start" title="Back to start (Shift + Space)"><span aria-hidden="true">⏮</span><span class="transport-reset-label"> Back to start</span></button>
       </div>
       <div class="transport-now">
         <strong>${escapeHtml(nowPlayingLabel)}</strong>
@@ -893,7 +910,10 @@ function handleTransportChange(playback) {
         playback.mode === 'full'
           ? `Playing ${playback.activeTrack?.title ?? 'track'}, full arrangement.`
           : 'Playing Layer Lab session.',
-      stopped: 'Playback stopped.',
+      stopped:
+        playback.mode === 'full' && playback.elapsedSeconds > 0
+          ? `Playback stopped at ${formatClock(playback.elapsedSeconds)}. Play continues from there.`
+          : 'Playback stopped.',
       error: 'Playback error. See the transport bar for details.',
     };
 
@@ -959,7 +979,7 @@ document.addEventListener('click', async (event) => {
 
     ui.selectedPieceId = pieceId;
     render();
-    await playSelectedFullTrack(0);
+    await playSelectedFullTrack(resumePositionFor(pieceId));
     return;
   }
 
@@ -973,8 +993,8 @@ document.addEventListener('click', async (event) => {
     return;
   }
 
-  if (action === 'transport-restart') {
-    const result = await transport.restart();
+  if (action === 'transport-reset') {
+    const result = await transport.reset();
 
     if (!result.ok && result.message) {
       showNotice(result.message);
@@ -1102,7 +1122,19 @@ async function handlePrimaryAction() {
     return;
   }
 
-  await playSelectedFullTrack();
+  await playSelectedFullTrack(resumePositionFor(piece?.id));
+}
+
+// Where Play continues for a track: at the position a Stop kept for that
+// track, otherwise from the start.
+function resumePositionFor(pieceId) {
+  const playback = transport.getState();
+
+  return playback.mode === 'full' &&
+    playback.status === 'stopped' &&
+    playback.activeTrack?.id === pieceId
+    ? playback.elapsedSeconds
+    : 0;
 }
 
 // --------------------------------------------------------------------------
@@ -1254,13 +1286,7 @@ function openInspector(piece, scene) {
 
   const saveButton = dialog.querySelector('[data-action="prepare-source-save"]');
   saveButton.disabled = true;
-  setInspectorStatus(
-    sourceApiState.available
-      ? sourceApiState.writeEnabled
-        ? 'Disk source loaded. Edit, then try the draft before overwriting.'
-        : 'Draft playback is available. Permanent writes need SOURCE_EDITOR_TOKEN on the server.'
-      : 'Draft playback is available. The source service is not reachable, so disk writes are off.',
-  );
+  setInspectorStatus(inspectorOpenMessage(APP_MODE, sourceApiState));
 
   dialog.showModal();
 }
@@ -1277,12 +1303,65 @@ function invalidateInspectorTrial() {
   setInspectorStatus('Unsaved draft. Try it before preparing a permanent overwrite.');
 }
 
+// --------------------------------------------------------------------------
+// The draft gate: only a draft that evaluated and played without an error
+// unlocks Prepare Overwrite. Errors while a pattern plays (a sound that is
+// not loaded, a pattern function that throws) do not reach the transport;
+// Strudel only logs them. While a draft is on trial, such a log entry
+// withdraws the trial.
+// --------------------------------------------------------------------------
+
+const RUNTIME_ERROR = /^\[(?:cyclist|query|getTrigger|webaudio)\] error: /;
+let draftTrial = null; // { id, runtimeError } while a draft is evaluated or playing
+
+function draftIdFor(source) {
+  return `draft:${source.piece.id}:${source.scene.id}`;
+}
+
+function draftIsActivePlayback(id) {
+  const playback = transport.getState();
+  return (
+    playback.activeTrack?.id === id && (playback.status === 'playing' || playback.status === 'loading')
+  );
+}
+
+document.addEventListener('strudel.log', (event) => {
+  const message = String(event.detail?.message ?? '');
+
+  if (!draftTrial || !RUNTIME_ERROR.test(message) || !draftIsActivePlayback(draftTrial.id)) {
+    return;
+  }
+
+  draftTrial.runtimeError ??= message.replace(RUNTIME_ERROR, '');
+
+  if (inspectorSource?.triedCode != null && draftIdFor(inspectorSource) === draftTrial.id) {
+    rejectDraftTrial(draftTrial.runtimeError);
+  }
+});
+
+function rejectDraftTrial(runtimeError) {
+  inspectorSource.triedCode = null;
+  const dialog = document.querySelector('[data-inspector]');
+  dialog.querySelector('[data-action="prepare-source-save"]').disabled = true;
+  dialog.querySelector('[data-source-confirm]').hidden = true;
+  setInspectorStatus(
+    `The draft failed while playing: ${runtimeError} The disk source is unchanged; fix the draft and try it again.`,
+    true,
+  );
+}
+
 async function tryInspectorDraft() {
   if (!inspectorSource) {
     return;
   }
 
   const code = document.querySelector('[data-inspector-editor]').value;
+  const dialog = document.querySelector('[data-inspector]');
+
+  // A new trial starts from nothing: an earlier success does not carry over.
+  inspectorSource.triedCode = null;
+  dialog.querySelector('[data-action="prepare-source-save"]').disabled = true;
+  dialog.querySelector('[data-source-confirm]').hidden = true;
 
   if (!code.trim()) {
     setInspectorStatus('The draft is empty. Add Strudel code before trying it.', true);
@@ -1293,8 +1372,10 @@ async function tryInspectorDraft() {
 
   const { piece, scene } = inspectorSource;
   const isMainScene = scene.id === 'main';
+  const trial = { id: draftIdFor(inspectorSource), runtimeError: null };
+  draftTrial = trial;
   const result = await transport.playFull({
-    id: `draft:${piece.id}:${scene.id}`,
+    id: trial.id,
     title: `${piece.title} — ${scene.name} draft`,
     code,
     bpm: piece.bpm,
@@ -1302,20 +1383,33 @@ async function tryInspectorDraft() {
     durationSeconds: isMainScene ? getTrackDurationSeconds(piece) : null,
   });
 
+  if (draftTrial !== trial) {
+    return; // superseded by a newer trial
+  }
+
   if (!result.ok) {
-    inspectorSource.triedCode = null;
-    setInspectorStatus(result.message ?? 'The draft could not be evaluated.', true);
+    draftTrial = null;
+    setInspectorStatus(
+      `${result.message ?? 'The draft could not be evaluated.'} The disk source is unchanged.`,
+      true,
+    );
+    return;
+  }
+
+  if (trial.runtimeError) {
+    rejectDraftTrial(trial.runtimeError);
+    return;
+  }
+
+  if (!draftIsActivePlayback(trial.id)) {
+    setInspectorStatus('The draft stopped before it played. Try it again before preparing an overwrite.', true);
     return;
   }
 
   inspectorSource.triedCode = code;
   const prepareButton = document.querySelector('[data-action="prepare-source-save"]');
   prepareButton.disabled = !inspectorSource.revision || !sourceApiState.writeEnabled;
-  setInspectorStatus(
-    prepareButton.disabled
-      ? 'Draft is playing. Disk source unchanged; permanent writing is not configured.'
-      : 'Draft is playing. Disk source unchanged. You can now prepare the overwrite.',
-  );
+  setInspectorStatus(draftPlayingMessage(APP_MODE, !prepareButton.disabled));
 }
 
 function prepareSourceOverwrite() {
@@ -1426,7 +1520,7 @@ window.addEventListener('keydown', async (event) => {
     event.preventDefault();
 
     if (event.shiftKey) {
-      const result = await transport.restart();
+      const result = await transport.reset();
 
       if (!result.ok && result.message) {
         showNotice(result.message);

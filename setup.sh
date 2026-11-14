@@ -70,6 +70,7 @@ if [ "$DEV_MODE" = false ]; then
   player_check_certificate_paths
   player_check_ports
   ok "ports $(player_http_port) and $(player_https_port) ready for the player"
+  player_check_editor_token
 fi
 
 # ---------------------------------------------------------------------------

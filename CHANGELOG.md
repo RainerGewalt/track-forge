@@ -6,6 +6,52 @@ All notable changes to Track Forge are listed here. The format follows
 
 ## [Unreleased]
 
+### Security
+
+- Source writing stays off unless `SOURCE_EDITOR_TOKEN` holds a private value
+  of at least 32 characters. The service refuses the example value that
+  `.env.example` set up to 0.1.1, and `.env.example` no longer sets a token.
+  Setup and `npm run player:start` say when the configured token does not
+  enable writing. If your `.env` was copied from an earlier `.env.example`,
+  generate a token with `openssl rand -hex 24`.
+
+### Fixed
+
+- A draft that fails to evaluate no longer counts as playing and no longer
+  unlocks **Prepare Overwrite**. Strudel reports evaluation errors without
+  rejecting; the transport now treats them as a failure, and the Source
+  Inspector shows the error.
+- A draft that evaluates but reports an error while it plays, such as a sound
+  that is not loaded, does not unlock **Prepare Overwrite** either.
+- The source service refuses a source that is empty or does not parse (422),
+  writes the new file and a backup of the previous one
+  (`.main.strudel.bak`) before it replaces the source in one rename, and
+  leaves the source unchanged when any step fails.
+- The player's spectrum shows the music again, and Stop silences the output
+  within 100 ms in the Studio and the player, reverb tails and notes that
+  were already scheduled included. Reverb renders in an offline audio context
+  had replaced the master gain that Stop and the spectrum use.
+- The hosted demo says in the Studio and the player that drafts and tracks
+  play in the browser and nothing is saved. The Source Inspector no longer
+  reports an unreachable source service in the demo and the dev server, where
+  there is none by design.
+
+### Changed
+
+- **Stop and Back to start are two actions.** Stop halts playback at once,
+  as before, but keeps the position: the next Play of the same track, in the
+  Studio and in the player, continues there. **Back to start** (the Studio
+  button that was Restart, Shift + Space, and a new button in the player)
+  returns to the beginning; while a track plays it continues from the top,
+  while it is stopped it stays stopped. At the end of a track, in Layer Lab
+  mode and for a track without a BPM, Stop keeps no position. Up to 0.1.1,
+  Stop always returned to the beginning.
+- Vite 6.4.5 (development dependency), which resolves the advisories reported
+  for 6.4.3.
+- `npm run test:e2e`: browser scenarios in headless Chrome for the draft
+  gate, the audio master, Stop and Back to start, and the demo notice, also
+  in CI. `npm audit` is a step before every tag (`docs/TESTING.md`).
+
 ## [0.1.1] - 2026-11-07
 
 ### Added

@@ -1,12 +1,11 @@
 import { appUrl } from './appUrl.js';
+import { APP_MODE } from './appMode.js';
 
 // The source service runs behind the LAN player's nginx at api/. The Vite dev
 // server and the hosted demo have none, so they do not ask for it.
-// VITE_SOURCE_SERVICE=on or off overrides that default at build time.
-const sourceServiceSetting = import.meta.env?.VITE_SOURCE_SERVICE;
-export const SOURCE_SERVICE_ENABLED = sourceServiceSetting
-  ? sourceServiceSetting !== 'off'
-  : !import.meta.env?.DEV;
+// VITE_SOURCE_SERVICE=on or off overrides that default at build time
+// (src/appMode.js).
+export const SOURCE_SERVICE_ENABLED = APP_MODE === 'local';
 
 export function applyLiveSources(pieces, sources) {
   let updated = 0;

@@ -585,6 +585,27 @@ summary:focus-visible {
   font-size: 0.8rem;
 }
 
+.mode-notice {
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px solid #b9a57c;
+  border-left: 4px solid #8e5e25;
+  border-radius: 8px;
+  color: #3d342a;
+  font-size: 0.86rem;
+  background: #fdf6e5;
+}
+
+.mode-notice strong {
+  color: #1f1c18;
+}
+
+.mode-notice a {
+  color: #174f45;
+  font-weight: 700;
+  text-underline-offset: 3px;
+}
+
 .notice {
   margin: 0;
   padding: 9px 12px;
@@ -1622,6 +1643,16 @@ summary:focus-visible {
 
   .transport-play {
     padding: 0 12px;
+  }
+
+  /* The symbol alone keeps both buttons on one line; the button keeps its
+     name "Back to start" through aria-label and title. */
+  .transport-reset {
+    min-width: 44px;
+  }
+
+  .transport-reset-label {
+    display: none;
   }
 
   .transport-clock {

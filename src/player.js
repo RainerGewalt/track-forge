@@ -6,8 +6,12 @@
 // logic, so tests can drive it with fake engines instead of real audio.
 //
 // Runtime facts this design relies on (verified against @strudel/repl 1.3.0):
-// - StrudelMirror.evaluate() compiles and starts the pattern; it rejects on
-//   evaluation errors.
+// - StrudelMirror.evaluate() compiles and starts the pattern. It does not
+//   reject when the code fails to evaluate: it keeps the error in
+//   repl.state.evalError and reports it in an "update" event. The engine
+//   wrapper below turns that into a rejection, and the transport treats an
+//   error reported while loading as a failure, so a failed evaluation never
+//   looks like playback.
 // - StrudelMirror.stop() stops the scheduler. With sync disabled the clock
 //   resets to zero, so the next evaluate starts the piece from the top.
 // - Editors created with sync = true share one clock, so several Layer Lab
@@ -167,6 +171,12 @@ export function createEditorEngine(element, { timeoutMs = 5000 } = {}) {
       const mirror = await waitForMirror();
       await ensureAudioReady();
       await mirror.evaluate();
+
+      const evalError = mirror.repl?.state?.evalError;
+
+      if (evalError) {
+        throw evalError instanceof Error ? evalError : new Error(String(evalError));
+      }
     },
     async stop() {
       const mirror = await waitForMirror();
@@ -185,6 +195,10 @@ export function createEditorEngine(element, { timeoutMs = 5000 } = {}) {
 //   onWake    — called right before an engine starts producing audio,
 //   onSilence — called after engines stop; used to kill the master output
 //               so reverb/delay tails do not ring past a stop.
+// Within this many seconds of the end, a stopped track starts from the top
+// on the next Play instead of resuming into its last moment.
+const END_OF_TRACK_SECONDS = 0.5;
+
 export function createTransport({
   engines,
   onChange = () => {},
@@ -211,11 +225,28 @@ export function createTransport({
 
   const allEngines = [engines.full, ...engines.channels];
 
-  // Surface scheduler errors that happen after a successful evaluate.
+  // Surface evaluation and scheduler errors the engines report. StrudelMirror
+  // sends its whole state with every update, so an error stays in later
+  // updates until the next successful evaluation; only an error that was not
+  // reported before is news.
+  const reportedErrors = new WeakSet();
+
   allEngines.forEach((engine, index) => {
     engine.onUpdate?.((update) => {
       const runtimeError = update?.schedulerError || update?.evalError;
-      if (runtimeError && (state.status === 'playing' || state.status === 'loading')) {
+
+      if (!runtimeError) {
+        return;
+      }
+
+      if (typeof runtimeError === 'object') {
+        if (reportedErrors.has(runtimeError)) {
+          return;
+        }
+        reportedErrors.add(runtimeError);
+      }
+
+      if (state.status === 'playing' || state.status === 'loading') {
         state.status = 'error';
         state.lastError = describeError(runtimeError, index === 0 ? 'full track' : `channel ${index}`);
         emit();
@@ -321,6 +352,14 @@ export function createTransport({
         return { ok: false, message: 'Superseded by a newer action.' };
       }
 
+      if (state.status === 'error') {
+        // The engine reported the failure through its update event while
+        // evaluate() resolved.
+        state.startedAt = null;
+        emit();
+        return { ok: false, message: state.lastError };
+      }
+
       state.status = 'playing';
       state.audioReady = true;
       state.startedAt = now();
@@ -370,6 +409,12 @@ export function createTransport({
         return { ok: false, message: 'Superseded by a newer action.' };
       }
 
+      if (state.status === 'error') {
+        state.startedAt = null;
+        emit();
+        return { ok: false, message: state.lastError };
+      }
+
       state.status = 'playing';
       state.audioReady = true;
       state.startedAt = now();
@@ -386,15 +431,57 @@ export function createTransport({
     }
   }
 
+  // Stop halts playback where it is: the engines stop and the master output
+  // is killed too, so reverb and delay tails do not ring past this point. The
+  // position is kept, so the next Play of the same track continues from there
+  // (by seeking, as a scrub does). Back to start is reset().
   async function stop() {
+    const position = positionToKeep();
     generation += 1;
     await stopEngines(allEngines);
-    // Stop means stop: the master output is killed too, so reverb and
-    // delay tails do not ring past this point.
     await hooks.onSilence?.();
     state.status = state.status === 'idle' ? 'idle' : 'stopped';
     state.startedAt = null;
+    state.offsetSeconds = position;
+    emit();
+    return { ok: true };
+  }
+
+  // The position a stop keeps. Only a full track has a position; Layer Lab
+  // loops do not. A track without a BPM cannot be resumed, because resuming
+  // seeks. At the end of a finite track the next Play starts from the top.
+  function positionToKeep() {
+    if (state.mode !== 'full' || !state.activeTrack) {
+      return 0;
+    }
+
+    if (state.status !== 'playing' && state.status !== 'loading' && state.status !== 'stopped') {
+      return 0;
+    }
+
+    if (typeof state.activeTrack.bpm !== 'number' || state.activeTrack.bpm <= 0) {
+      return 0;
+    }
+
+    const { elapsedSeconds } = getState();
+    const durationSeconds = state.activeTrack.durationSeconds;
+
+    if (typeof durationSeconds === 'number' && durationSeconds > 0 && elapsedSeconds >= durationSeconds - END_OF_TRACK_SECONDS) {
+      return 0;
+    }
+
+    return elapsedSeconds;
+  }
+
+  // Back to start: the position returns to the beginning. Playback that is
+  // running continues from the top; stopped playback stays stopped.
+  async function reset() {
+    if (state.status === 'playing' || state.status === 'loading') {
+      return restart();
+    }
+
     state.offsetSeconds = 0;
+    state.startedAt = null;
     emit();
     return { ok: true };
   }
@@ -529,6 +616,8 @@ export function createTransport({
       await stop();
     }
 
+    // A position belongs to the full track of the mode that is left.
+    state.offsetSeconds = 0;
     state.mode = mode;
     emit();
     return { ok: true, message: wasAudible ? MESSAGES.modeSwitchStopped : undefined };
@@ -547,6 +636,7 @@ export function createTransport({
     playFull,
     playLab,
     stop,
+    reset,
     restart,
     setMode,
     assignLayer,

@@ -92,7 +92,8 @@ roadmap and no release schedule.
 And underneath it stays practical:
 
 - one folder per track; plain `.strudel`, `.js` and `.json` files;
-- one-click playback, hard stop/restart and live per-layer mutes;
+- one-click playback, a hard Stop that keeps the position, Back to start,
+  and live per-layer mutes;
 - automatic track discovery — no central registry to maintain;
 - a CC0 sample pipeline with checksums, evidence and a manual-review queue;
 - rights fields per track that keep unknown ownership and sample terms
@@ -140,12 +141,17 @@ Try these three things first:
 The Source Inspector separates experimentation from saving:
 
 1. **Try Draft** plays the editor contents only in the current browser session.
-2. A successful trial unlocks **Prepare Overwrite**.
+2. A successful trial unlocks **Prepare Overwrite**. A draft that does not
+   evaluate, or reports an error while it plays (for example a sound that is
+   not loaded), does not.
 3. **Confirm Overwrite** saves only that exact tested revision.
 
-If the file changed elsewhere, the source service refuses the stale write. In
-local dev mode you can audition drafts; permanent browser writes are enabled
-only when the optional source service and editor token are configured.
+If the file changed elsewhere, the source service refuses the stale write. It
+also refuses a source that is empty or does not parse, and keeps the previous
+version next to the file (`.main.strudel.bak`). In local dev mode and in the
+hosted demo you can audition drafts, but nothing is saved; permanent browser
+writes are enabled only when the optional source service and editor token are
+configured.
 
 ## Add your first track
 
@@ -247,10 +253,13 @@ artwork under `public/images/tracks/`, then run `npm run images:manifest`.
 <details>
 <summary><strong>Permanent source writes</strong></summary>
 
-Copy `.env.example` to `.env`, generate a token with
-`openssl rand -hex 24`, set `SOURCE_EDITOR_TOKEN`, and restart the Docker stack.
-The browser stores a successfully used token only for the current tab. Never
-commit `.env` or expose the source service to an untrusted network.
+Writing is off until you set a private token. Copy `.env.example` to `.env`,
+generate a token with `openssl rand -hex 24`, uncomment `SOURCE_EDITOR_TOKEN`
+and set it to that value, then restart the Docker stack. The service refuses
+tokens shorter than 32 characters and the example value that `.env.example`
+contained up to 0.1.1; setup says so when it finds one. The browser stores a
+successfully used token only for the current tab. Never commit `.env` or
+expose the source service to an untrusted network.
 
 </details>
 
