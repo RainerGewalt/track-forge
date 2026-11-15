@@ -1,0 +1,181 @@
+{
+  "_base": "/samples/library/audio/",
+  "bot_anvil": [
+    "tremor/anvil/anvil--anvil-hit1-v1-rr1-mid.wav"
+  ],
+  "bot_balafonhard": {
+    "c4": "memory/balafonhard/balafonhard--ethnicxylo-hardm-c4-vl2-rr1-mid.wav",
+    "c5": "memory/balafonhard/balafonhard--ethnicxylo-hardm-c5-vl2-rr1-mid.wav",
+    "c#3": "memory/balafonhard/balafonhard--ethnicxylo-hardm-cs3-vl2-rr1-mid.wav",
+    "f3": "memory/balafonhard/balafonhard--ethnicxylo-hardm-f3-vl2-rr1-mid.wav",
+    "f4": "memory/balafonhard/balafonhard--ethnicxylo-hardm-f4-vl2-rr1-mid.wav"
+  },
+  "bot_balafonsoft": {
+    "c4": "memory/balafonsoft/balafonsoft--ethnicxylo-softm-c4-vl2-rr1-mid.wav",
+    "c#3": "memory/balafonsoft/balafonsoft--ethnicxylo-softm-cs3-vl2-rr1-mid.wav",
+    "f3": "memory/balafonsoft/balafonsoft--ethnicxylo-softm-f3-vl2-rr1-mid.wav",
+    "f4": "memory/balafonsoft/balafonsoft--ethnicxylo-softm-f4-vl2-rr1-mid.wav"
+  },
+  "bot_bassdrum": [
+    "pulse/bassdrum/bassdrum--bdrumnew-hit-v2-rr1-sum.wav",
+    "pulse/bassdrum/bassdrum--bdrumnew-hit-v3-rr1-sum.wav",
+    "pulse/bassdrum/bassdrum--bdrumnew-hit-v5-rr1-sum.wav"
+  ],
+  "bot_bongo": [
+    "skin/bongo/bongo--bongoh-hit1-v2-rr1-mid.wav",
+    "skin/bongo/bongo--bongoh-hit1-v3-rr1-mid.wav",
+    "skin/bongo/bongo--bongoh-hitmuted1-v2-rr1-mid.wav",
+    "skin/bongo/bongo--bongol-hit1-v2-rr1-mid.wav",
+    "skin/bongo/bongo--bongol-hit1-v3-rr1-mid.wav",
+    "skin/bongo/bongo--bongol-hitmuted2-v1-rr1-mid.wav"
+  ],
+  "bot_bowedbrake": [
+    "tremor/bowedbrake/bowedbrake--brakedrum1-bowed-rr2-mid.wav"
+  ],
+  "bot_bowedcymbal": [
+    "tremor/bowedcymbal/bowedcymbal--suscymb1-bow-13.wav",
+    "tremor/bowedcymbal/bowedcymbal--suscymb1-bow-17.wav",
+    "tremor/bowedcymbal/bowedcymbal--suscymb1-bow-7.wav"
+  ],
+  "bot_braam": [
+    "ground/braam/647712-unfa-braam.flac"
+  ],
+  "bot_cabasa": [
+    "seed/cabasa/cabasa--cabasa1-hit-rr1-mid.wav",
+    "seed/cabasa/cabasa--cabasa1-rub-v1-rr1-mid.wav"
+  ],
+  "bot_claves": [
+    "seed/claves/claves--claves-mf-2.wav",
+    "seed/claves/claves--claves-mf-3.wav",
+    "seed/claves/claves--claves2-hit-v2-rr1-mid.wav"
+  ],
+  "bot_conga": [
+    "skin/conga/conga--conga-hitfm-v1-rr1-sum.wav",
+    "skin/conga/conga--conga-hitn-v1-rr1-sum.wav"
+  ],
+  "bot_darbuka": [
+    "skin/darbuka/darbuka--darbuka-1-hit-vl1-rr1.wav",
+    "skin/darbuka/darbuka--darbuka-2-hit-vl1-rr1.wav",
+    "skin/darbuka/darbuka--darbuka-3-hit-vl1-rr1.wav",
+    "skin/darbuka/darbuka--darbuka-4-hit-vl1-rr1.wav",
+    "skin/darbuka/darbuka--darbuka-5-hit-vl1-rr1.wav"
+  ],
+  "bot_didgepulse": [
+    "ground/didgepulse/didgepulse--didgeridoo1-bark1-main-rr3.wav",
+    "ground/didgepulse/didgepulse--didgeridoo1-short1-main-rr2.wav",
+    "ground/didgepulse/didgepulse--didgeridoo1-tap1-main-rr16.wav"
+  ],
+  "bot_didgeridoo": [
+    "ground/didgeridoo/didgeridoo--didgeridoo1-sus2-main.wav",
+    "ground/didgeridoo/didgeridoo--didgeridoo1-sus3-main.wav"
+  ],
+  "bot_djembe": [
+    "skin/djembe/djembe-accompaniment.ogg"
+  ],
+  "bot_framedrum": [
+    "skin/framedrum/framedrum--hdruml-hand-rr1-sum.wav",
+    "skin/framedrum/framedrum--hdruml-hit-v2-rr1-sum.wav",
+    "skin/framedrum/framedrum--hdruml-hit-v3-rr1-sum.wav",
+    "skin/framedrum/framedrum--hdruml-hitmuted-v2-rr1-sum.wav",
+    "skin/framedrum/framedrum--hdruml-hitmuted-v3-rr1-sum.wav",
+    "skin/framedrum/framedrum--hdrums-hand-v1-rr1-sum.wav",
+    "skin/framedrum/framedrum--hdrums-hitmuted-v2-rr1-sum.wav"
+  ],
+  "bot_glass": {
+    "d#4": "tremor/glass/glass--glass1-ds4-slow-1-decay.wav",
+    "a#4": "tremor/glass/glass--glass3-as4-slow-1-decay.wav",
+    "d5": "tremor/glass/glass--glass4-d5-slow-2-decay.wav"
+  },
+  "bot_glasssus": {
+    "d#4": "tremor/glasssus/glasssus--glass1-ds4-slow-1-main.wav",
+    "a#4": "tremor/glasssus/glasssus--glass3-as4-slow-1-main.wav"
+  },
+  "bot_gong": [
+    "ground/gong/gong--gong-2-mp.wav"
+  ],
+  "bot_gongscrape": [
+    "tremor/gongscrape/gongscrape--gong-scrape-mf.wav"
+  ],
+  "bot_guiro": [
+    "seed/guiro/guiro--guiro-hit-rr1-mid.wav",
+    "seed/guiro/guiro--guiro-long.wav",
+    "seed/guiro/guiro--guiro-short.wav"
+  ],
+  "bot_hightom": [
+    "skin/hightom/hightom--tomh-hits-v2-rr1-mid.wav",
+    "skin/hightom/hightom--tomh-hits-v3-rr1-mid.wav",
+    "skin/hightom/hightom--tomh-rims-v2-rr1-mid.wav"
+  ],
+  "bot_hihat": [
+    "seed/hihat/hihat--hihat-close-rr1-mid.wav",
+    "seed/hihat/hihat--hihat-hitc-v1-rr1-mid.wav",
+    "seed/hihat/hihat--hihat-hitc-v2-rr1-mid.wav",
+    "seed/hihat/hihat--hihat-hitc-v3-rr1-mid.wav",
+    "seed/hihat/hihat--hihat-hitloose-rr1-mid.wav"
+  ],
+  "bot_kantele": [
+    "memory/kantele/diy-kantele-sample-raw.ogg"
+  ],
+  "bot_logdrum": [
+    "skin/logdrum/logdrum--logdrumhi-medm-v1-rr1-sum.wav",
+    "skin/logdrum/logdrum--logdrumlo-medm-v1-rr1-sum.wav"
+  ],
+  "bot_lowtom": [
+    "pulse/lowtom/lowtom--toml-hitm-v2-rr1-mid.wav",
+    "pulse/lowtom/lowtom--toml-hitm-v3-rr1-mid.wav"
+  ],
+  "bot_mbira": {
+    "a4": "memory/mbira/mbira--mbira6-normal-mainspirit-a4-k1-vl3-rr2.wav",
+    "b2": "memory/mbira/mbira--mbira6-normal-mainspirit-b2-k8-vl3-rr2.wav",
+    "b3": "memory/mbira/mbira--mbira6-normal-mainspirit-b3-k12-vl3-rr2.wav",
+    "c#4": "memory/mbira/mbira--mbira6-normal-mainspirit-cs4-k2-vl3-rr2.wav",
+    "d#4": "memory/mbira/mbira--mbira6-normal-mainspirit-ds4-k13-vl3-rr2.wav",
+    "f#4": "memory/mbira/mbira--mbira6-normal-mainspirit-fs4-k14-vl3-rr2.wav"
+  },
+  "bot_ocarina": {
+    "a3": "memory/ocarina/ocarina--stdocarina-sus-a3.wav",
+    "a4": "memory/ocarina/ocarina--stdocarina-sus-a4.wav",
+    "b3": "memory/ocarina/ocarina--stdocarina-sus-b3.wav",
+    "d4": "memory/ocarina/ocarina--stdocarina-sus-d4.wav",
+    "e4": "memory/ocarina/ocarina--stdocarina-sus-e4.wav",
+    "f#4": "memory/ocarina/ocarina--stdocarina-sus-fs4.wav"
+  },
+  "bot_oceandrum": [
+    "ground/oceandrum/oceandrum--oceandrum-sus-2-mid.wav"
+  ],
+  "bot_psalterybow": {
+    "c4": "memory/psalterybow/psalterybow--bowedpsaltery-c4-main-longbow-rr1.wav",
+    "d4": "memory/psalterybow/psalterybow--bowedpsaltery-d4-main-longbow-rr1.wav",
+    "e4": "memory/psalterybow/psalterybow--bowedpsaltery-e4-main-longbow-rr2.wav"
+  },
+  "bot_psalterypluck": {
+    "a#3": "memory/psalterypluck/psalterypluck--bowedpsaltery-as3-main-pluck-rr1.wav",
+    "c4": "memory/psalterypluck/psalterypluck--bowedpsaltery-c4-main-pluck-rr1.wav"
+  },
+  "bot_recorder": {
+    "a3": "memory/recorder/recorder--tenrecorder-susvib-a3-rr1-main.wav",
+    "c4": "memory/recorder/recorder--tenrecorder-susvib-c4-rr1-main.wav",
+    "d4": "memory/recorder/recorder--tenrecorder-susvib-d4-rr1-main.wav",
+    "e4": "memory/recorder/recorder--tenrecorder-susvib-e4-rr1-main.wav",
+    "f#4": "memory/recorder/recorder--tenrecorder-susvib-fs4-rr1-main.wav"
+  },
+  "bot_recorderstac": {
+    "c4": "memory/recorderstac/recorderstac--tenrecorder-stac-c4-rr1-main.wav",
+    "d4": "memory/recorderstac/recorderstac--tenrecorder-stac-d4-rr1-main.wav",
+    "e4": "memory/recorderstac/recorderstac--tenrecorder-stac-e4-rr1-main.wav"
+  },
+  "bot_shaker": [
+    "seed/shaker/shaker--mid-shakerdouble-down-rr1.wav",
+    "seed/shaker/shaker--mid-shakerdouble-up-rr1.wav",
+    "seed/shaker/shaker--mid-shakerhighfaster-down-rr1.wav",
+    "seed/shaker/shaker--mid-shakerlowfaster-down-rr1.wav"
+  ],
+  "bot_timpani": [
+    "pulse/timpani/timpani--timpani1-hit-v2-rr1-sum.wav",
+    "pulse/timpani/timpani--timpani1-hit-v4-rr1-sum.wav"
+  ],
+  "bot_woodblock": [
+    "seed/woodblock/woodblock--wood-click-mp.wav",
+    "seed/woodblock/woodblock--wood-click-pp-rr1.wav"
+  ]
+}
